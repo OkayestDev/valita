@@ -4,9 +4,7 @@ import {
     Context as LambdaContext,
 } from "aws-lambda";
 import { Options } from "./types/options.type";
-import { Request } from "./types/request.type";
 import { safeParseJson } from "./utils/json.utils";
-import { ValidationError } from "./constants/validation-error";
 import { requestHandler } from "./request-handler";
 import { parseCookies } from "./utils/request.utils";
 import { Method } from "./constants/enums";

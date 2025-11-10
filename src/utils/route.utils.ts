@@ -45,27 +45,20 @@ export function matchRoute(route: string, url: string): boolean {
     let i = 0,
         j = 0;
 
-    while (i < routeParts.length && j < urlParts.length) {
+    for (i = 0, j = 0; i < routeParts.length && j < urlParts.length; i++, j++) {
         const routePart = routeParts[i];
         const urlPart = urlParts[j];
 
         if (routePart === "*") {
             // wildcard matches any remainder
             return true;
-        } else if (routePart.startsWith(":")) {
-            // Parameter matches any single segment
-            i++;
-            j++;
-            continue;
-        } else if (routePart === urlPart) {
-            // Exact match
-            i++;
-            j++;
-            continue;
-        } else {
-            // Mismatch
-            return false;
         }
+
+        if (routePart.startsWith(":") || routePart === urlPart) {
+            continue;
+        }
+
+        return false;
     }
 
     // Special handling for trailing wildcards in the route
