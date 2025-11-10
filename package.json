@@ -1,15 +1,19 @@
 {
     "name": "valita",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/OkayestDev/valita.git"
+    },
     "scripts": {
         "build": "tsc",
         "lint": "eslint . --ext .ts",
         "test": "node --inspect=9229 ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles"
     },
-    "author": "",
-    "license": "ISC",
-    "description": "",
+    "author": "OkayestDev",
+    "license": "MIT",
+    "description": "express-like api framework with built-in zod schema validation",
     "devDependencies": {
         "@types/aws-lambda": "^8.10.157",
         "@types/jest": "^29.5.14",
