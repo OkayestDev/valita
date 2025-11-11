@@ -6,7 +6,6 @@ import { resolvePathFromUrls } from "./utils/route.utils";
 import { Request } from "./types/request.type";
 import { Response } from "./types/response.type";
 import { validateRequest } from "./utils/zod.utils";
-import { logResponse } from "./handlers/logger.handler";
 
 type RouteFns = [...(MiddlewareFn | Schema)[], ControllerFn];
 

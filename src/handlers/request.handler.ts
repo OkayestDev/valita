@@ -5,7 +5,7 @@ import { invokeRouteFns, resolvePathAndController } from "../route";
 import { Method } from "../constants/enums";
 import { parseRoute } from "../utils/route.utils";
 import { errorHandler } from "./error.handler";
-import { logRequest } from "./logger.handler";
+import { logRequest, logResponse } from "./logger.handler";
 
 type RequestHandlerParams = {
     headers: Record<string, string>;
@@ -48,10 +48,11 @@ export async function requestHandler({
             cookies,
             method,
         };
-        logRequest(pathname, request);
 
         // Execute controller function and handle response
-        return await invokeRouteFns(routeFns, request);
+        const response = await invokeRouteFns(routeFns, request);
+        logResponse(pathname, response);
+        return response;
     } catch (err: any) {
         return errorHandler(err);
     }
