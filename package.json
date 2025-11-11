@@ -1,5 +1,5 @@
 {
-    "name": "valita",
+    "name": "valita-server",
     "version": "0.0.1",
     "main": "index.js",
     "repository": {
@@ -9,7 +9,9 @@
     "scripts": {
         "build": "tsc",
         "lint": "eslint . --ext .ts",
-        "test": "node --inspect=9229 ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles"
+        "test": "node --inspect=9229 ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles",
+        "example-serverless": "serverless offline start --stage dev -c ./example/bookstore/serverless.yml",
+        "publish:latest": "npm run build && npm publish --access public"
     },
     "author": "OkayestDev",
     "license": "MIT",
@@ -21,6 +23,8 @@
         "eslint": "^9.12.0",
         "jest": "^29.7.0",
         "prettier": "^3.6.2",
+        "serverless": "^4.23.0",
+        "serverless-offline": "^14.4.0",
         "ts-jest": "^29.4.5",
         "ts-node": "^10.9.2",
         "typescript": "^5.6.3"
