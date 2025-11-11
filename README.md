@@ -43,7 +43,16 @@ get(
 );
 
 const server = createServer({
-    errorHandler: console.error,
+    errorHandler: (err) => {
+        console.error("Unhandled error", err);
+        return {
+            status: 500,
+            body: { message: "Internal server error" },
+        };
+    },
+    enableRequestLogging: true,
+    enableResponseLogging: true,
+    loggerFn: console.log
 });
 
 server.listen(3000, () => {
@@ -129,8 +138,10 @@ Deploy it behind API Gateway and Valita will translate the event into the same r
 
 Both `createServer` and `createLambda` accept an optional `Options` object:
 
-- `errorHandler?: (err: Error) => void` — Override how uncaught errors are reported.
-- `logRequests?: boolean` — Reserved for future request logging (currently not used internally; feel free to hook into middleware instead).
+- `errorHandler?: (err: Error) => Response` — Return a custom response for uncaught errors. If omitted, Valita sends a `500` or `400` for `ValidationError`.
+- `enableRequestLogging?: boolean` — When `true`, every request is passed to `logRequest(path, data)`.
+- `enableResponseLogging?: boolean` — When `true`, every response is passed to `logResponse(path, response)`.
+- `loggingFn?: LoggerFn` — Override the logging function used by both `logRequest` and `logResponse` (defaults to `console.log`).
 
 ## Example: Bookstore API
 
