@@ -5,12 +5,15 @@ import {
 } from "aws-lambda";
 import { Options } from "./types/options.type";
 import { safeParseJson } from "./utils/json.utils";
-import { requestHandler } from "./request-handler";
+import { requestHandler } from "./handlers/request.handler";
 import { parseCookies } from "./utils/request.utils";
 import { Method } from "./constants/enums";
+import { configureLogger } from "./handlers/logger.handler";
+import { configureErrorHandler } from "./handlers/error.handler";
 
-// TODO handle options
 export function createLambda(options: Options = {}) {
+    configureErrorHandler(options);
+    configureLogger(options);
     return async function (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> {
         const body = safeParseJson(event.body ?? "");
         const { path, httpMethod: method, headers, queryStringParameters: query } = event;

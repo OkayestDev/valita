@@ -1,1 +1,0 @@
-node --inspect-brk=9229 -r ts-node/register ./example/bookstore/start.ps1

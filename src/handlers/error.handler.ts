@@ -1,0 +1,30 @@
+import { ValidationError } from "../constants/validation-error";
+import { ErrorHandler } from "../types/error-handler.type";
+import { Options } from "../types/options.type";
+import { Response } from "../types/response.type";
+
+const errorHandlerConfig: { errorHandler: ErrorHandler | undefined } = {
+    errorHandler: undefined,
+};
+
+export function configureErrorHandler(options: Options) {
+    errorHandlerConfig.errorHandler = options.errorHandler;
+}
+
+export function errorHandler(err: any | Error): Response {
+    if (errorHandlerConfig.errorHandler) {
+        return errorHandlerConfig.errorHandler(err);
+    }
+
+    if (err instanceof ValidationError) {
+        return {
+            status: 400,
+            body: { message: err.message, error: err.error },
+        };
+    }
+
+    return {
+        status: 500,
+        body: { message: "Internal server error" },
+    };
+}

@@ -1,6 +1,6 @@
 {
     "name": "valita-server",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "main": "index.js",
     "repository": {
         "type": "git",
@@ -11,6 +11,7 @@
         "lint": "eslint . --ext .ts",
         "test": "node --inspect=9229 ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles",
         "example-serverless": "serverless offline start --stage dev -c ./example/bookstore/serverless.yml",
+        "example-server": "node --inspect=9229 -r ts-node/register ./example/bookstore/bookstore.app.ts",
         "publish:latest": "npm run build && npm publish --access public"
     },
     "author": "OkayestDev",

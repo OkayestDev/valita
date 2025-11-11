@@ -4,8 +4,10 @@ import { Method } from "./constants/enums";
 import querystring from "querystring";
 import { sendResponse } from "./utils/response.utils";
 import { parseCookies } from "./utils/request.utils";
-import { requestHandler } from "./request-handler";
+import { requestHandler } from "./handlers/request.handler";
 import { Options } from "./types/options.type";
+import { configureLogger } from "./handlers/logger.handler";
+import { configureErrorHandler } from "./handlers/error.handler";
 
 function parseBody(req: http.IncomingMessage): Promise<Record<string, any>> {
     return new Promise((resolve, reject) => {
@@ -20,8 +22,10 @@ function parseBody(req: http.IncomingMessage): Promise<Record<string, any>> {
     });
 }
 
-export const serverCallback =
-    (options: Options) => async (req: http.IncomingMessage, res: http.ServerResponse) => {
+export const serverCallback = (options: Options) => {
+    configureErrorHandler(options);
+    configureLogger(options);
+    return async (req: http.IncomingMessage, res: http.ServerResponse) => {
         const pathname = req.url?.split("?")[0] || "/";
         const query = querystring.parse(req.url?.split("?")[1] || "");
         const body = await parseBody(req);
@@ -40,6 +44,7 @@ export const serverCallback =
 
         return sendResponse(res, response);
     };
+};
 
 export function createServer(options: Options = {}): http.Server {
     const server = http.createServer(serverCallback(options));

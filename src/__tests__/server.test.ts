@@ -28,7 +28,7 @@ describe("server", () => {
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ hello: "world" }),
             });
-            await serverCallback({ errorHandler: console.error })(req, res);
+            await serverCallback({})(req, res);
             expect(controller).toHaveBeenCalledWith({
                 params: { id: "123" },
                 body: { hello: "world" },

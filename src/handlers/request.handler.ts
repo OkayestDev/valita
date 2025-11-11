@@ -1,9 +1,11 @@
-import { Response } from "./types/response.type";
-import { Request } from "./types/request.type";
-import { ValidationError } from "./constants/validation-error";
-import { invokeRouteFns, resolvePathAndController } from "./route";
-import { Method } from "./constants/enums";
-import { parseRoute } from "./utils/route.utils";
+import { Response } from "../types/response.type";
+import { Request } from "../types/request.type";
+import { ValidationError } from "../constants/validation-error";
+import { invokeRouteFns, resolvePathAndController } from "../route";
+import { Method } from "../constants/enums";
+import { parseRoute } from "../utils/route.utils";
+import { errorHandler } from "./error.handler";
+import { logRequest } from "./logger.handler";
 
 type RequestHandlerParams = {
     headers: Record<string, string>;
@@ -23,6 +25,8 @@ export async function requestHandler({
     pathname,
 }: RequestHandlerParams): Promise<Response> {
     try {
+        logRequest(pathname, { headers, query, body, cookies, method });
+
         const { path, routeFns } = resolvePathAndController(method, pathname) || {};
 
         if (!path || !routeFns) {
@@ -44,20 +48,11 @@ export async function requestHandler({
             cookies,
             method,
         };
+        logRequest(pathname, request);
 
         // Execute controller function and handle response
         return await invokeRouteFns(routeFns, request);
     } catch (err: any) {
-        if (err instanceof ValidationError) {
-            return {
-                status: 400,
-                body: { message: err.message, error: err.error },
-            };
-        }
-
-        return {
-            status: 500,
-            body: { message: "Internal server error" },
-        };
+        return errorHandler(err);
     }
 }
