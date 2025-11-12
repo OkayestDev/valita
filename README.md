@@ -168,6 +168,18 @@ npm run example-serverless
 
 Then send requests to the endpoints exposed in `example/bookstore/serverless.yml`.
 
+### Benchmark vs Express.js
+
+Ran benchmark through [autocannon script](./example/autocannon.ps1). Not an exact science, but gives an idea of Valita vs Express
+
+#### Valita
+
+![Valita Benchmark Results](./example/valita-benchmark.png)
+
+#### Express
+
+![Express Benchmark Results](./example/express-benchmark.png)
+
 ## Contributing
 
 1. Clone the repo and install dependencies (`npm install`).
