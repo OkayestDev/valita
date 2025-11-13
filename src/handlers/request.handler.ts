@@ -1,6 +1,5 @@
 import { Response } from "../types/response.type";
 import { Request } from "../types/request.type";
-import { ValidationError } from "../constants/validation-error";
 import { invokeRouteFns, resolvePathAndController } from "../route";
 import { Method } from "../constants/enums";
 import { parseRoute } from "../utils/route.utils";
@@ -27,17 +26,7 @@ export async function requestHandler({
     try {
         logRequest(pathname, { headers, query, body, cookies, method });
 
-        const { path, routeFns } = resolvePathAndController(method, pathname) || {};
-
-        if (!path || !routeFns) {
-            return {
-                status: 404,
-                body: {
-                    message: "Route not found",
-                },
-            };
-        }
-
+        const { path, routeFns } = resolvePathAndController(method, pathname);
         const params = parseRoute(path, pathname);
 
         const request: Request = {

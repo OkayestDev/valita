@@ -2,7 +2,7 @@ import http from "http";
 import { safeParseJson } from "./utils/json.utils";
 import { Method } from "./constants/enums";
 import querystring from "querystring";
-import { sendResponse } from "./utils/response.utils";
+import { sendHttpResponse } from "./utils/response.utils";
 import { parseCookies } from "./utils/request.utils";
 import { requestHandler } from "./handlers/request.handler";
 import { Options } from "./types/options.type";
@@ -25,7 +25,7 @@ function parseBody(req: http.IncomingMessage): Promise<Record<string, any>> {
 export const serverCallback = (options: Options) => {
     configureErrorHandler(options);
     configureLogger(options);
-    return async (req: http.IncomingMessage, res: http.ServerResponse) => {
+    return async (req: http.IncomingMessage, httpResponse: http.ServerResponse) => {
         const pathname = req.url?.split("?")[0] || "/";
         const query = querystring.parse(req.url?.split("?")[1] || "");
         const body = await parseBody(req);
@@ -42,7 +42,7 @@ export const serverCallback = (options: Options) => {
             pathname,
         });
 
-        return sendResponse(res, response);
+        return sendHttpResponse(httpResponse, response);
     };
 };
 

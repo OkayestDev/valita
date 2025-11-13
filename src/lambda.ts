@@ -10,6 +10,7 @@ import { parseCookies } from "./utils/request.utils";
 import { Method } from "./constants/enums";
 import { configureLogger } from "./handlers/logger.handler";
 import { configureErrorHandler } from "./handlers/error.handler";
+import { sendLambdaResponse } from "./utils/response.utils";
 
 export function createLambda(options: Options = {}) {
     configureErrorHandler(options);
@@ -26,10 +27,6 @@ export function createLambda(options: Options = {}) {
             method: method as Method,
             pathname: path,
         });
-        return {
-            statusCode: response.status,
-            headers: response.headers,
-            body: JSON.stringify(response.body),
-        };
+        return sendLambdaResponse(response);
     };
 }

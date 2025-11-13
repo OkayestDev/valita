@@ -12,7 +12,7 @@ export function parseRoute(route: string, pathname: string) {
         if (routePart?.startsWith(":")) {
             const key = routePart.slice(1);
             params[key] = urlPart || "";
-        } else if (routePart !== urlPart) {
+        } else if (routePart !== urlPart && routePart !== "*") {
             matched = false;
             break;
         }

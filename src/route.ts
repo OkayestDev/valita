@@ -6,6 +6,7 @@ import { resolvePathFromUrls } from "./utils/route.utils";
 import { Request } from "./types/request.type";
 import { Response } from "./types/response.type";
 import { validateRequest } from "./utils/zod.utils";
+import { NoRouteError } from "./constants/no-route-error";
 
 type RouteFns = [...(MiddlewareFn | Schema)[], ControllerFn];
 
@@ -58,18 +59,18 @@ export function resolveMethodObj(method: Method): RouteObj | never {
         case Method.Delete:
             return deletes;
         default:
-            throw new Error(`Method ${method} not supported`);
+            throw new NoRouteError(`Method ${method} not supported`);
     }
 }
 
 export function resolvePathAndController(
     method: Method,
     url: string,
-): { path: string; routeFns: RouteFns } | undefined {
+): { path: string; routeFns: RouteFns } | never {
     const methodObj = resolveMethodObj(method);
     const path = resolvePathFromUrls(Object.keys(methodObj), url);
     if (!path) {
-        return undefined;
+        throw new NoRouteError(`Route ${method} ${url} not found`);
     }
     return { path, routeFns: methodObj[path] };
 }

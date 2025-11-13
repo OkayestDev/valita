@@ -10,7 +10,7 @@ describe("lambda", () => {
             const controller = jest.fn((): Response => {
                 return {
                     status: 200,
-                    headers: { "content-type": "application/json" },
+                    headers: { "Content-Type": "application/json" },
                     body: { message: "big success!" },
                 };
             }) as ControllerFn;
@@ -21,14 +21,15 @@ describe("lambda", () => {
                 path: "/users/123",
                 httpMethod: "POST",
                 headers: {
-                    "content-type": "application/json",
+                    "Content-Type": "application/json",
+                    Cookie: "test=123",
                 },
                 body: JSON.stringify({ hello: "world" }),
             } as unknown as APIGatewayProxyEvent;
             const result = await lambda(event);
             expect(result).toEqual({
                 statusCode: 200,
-                headers: { "content-type": "application/json" },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: "big success!" }),
             });
         });

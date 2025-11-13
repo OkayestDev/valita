@@ -8,6 +8,13 @@ describe("routeUtils", () => {
             const result = routeUtils.parseRoute(route, url);
             expect(result).toEqual({ id: "123" });
         });
+
+        it("works with wildcard routes", () => {
+            const route = "/user/*/test/:id";
+            const url = "/user/123/test/456";
+            const result = routeUtils.parseRoute(route, url);
+            expect(result).toEqual({ id: "456" });
+        });
     });
 
     describe(routeUtils.matchRoute.name, () => {

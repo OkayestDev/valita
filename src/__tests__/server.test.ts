@@ -91,5 +91,33 @@ describe("server", () => {
                 }),
             );
         });
+
+        it("should handle get requests", async () => {
+            const controller = jest.fn((): Response => {
+                return {
+                    status: 200,
+                    headers: { "content-type": "application/json" },
+                    body: { message: "big success!" },
+                };
+            }) as ControllerFn;
+            route.get("/users", controller);
+            const { req, res } = mockRequestResponse({
+                method: Method.Get,
+                url: "/users",
+                headers: { "content-type": "application/json" },
+            });
+            await serverCallback({})(req, res);
+            expect(controller).toHaveBeenCalledWith({
+                params: {},
+                body: {},
+                query: {},
+                headers: { "content-type": "application/json" },
+                cookies: {},
+                method: Method.Get,
+            });
+            expect(res.statusCode).toBe(200);
+            expect(res.getHeader("Content-Type")).toBe("application/json");
+            expect(res.end).toHaveBeenCalledWith(JSON.stringify({ message: "big success!" }));
+        });
     });
 });

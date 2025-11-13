@@ -1,7 +1,7 @@
 import { Response } from "../types/response.type";
 import http from "http";
 
-export function sendResponse(httpResponse: http.ServerResponse, response: Response) {
+export function sendHttpResponse(httpResponse: http.ServerResponse, response: Response) {
     const { status, headers, body } = response;
     if (typeof body === "object") {
         httpResponse.writeHead(status, {
@@ -17,4 +17,26 @@ export function sendResponse(httpResponse: http.ServerResponse, response: Respon
         ...headers,
     });
     httpResponse.end(body ?? "{}");
+}
+
+export function sendLambdaResponse(response: Response) {
+    if (typeof response.body === "object") {
+        return {
+            statusCode: response.status,
+            headers: {
+                "Content-Type": "application/json",
+                ...response.headers,
+            },
+            body: JSON.stringify(response.body),
+        };
+    }
+
+    return {
+        statusCode: response.status,
+        headers: {
+            "Content-Type": "text/plain",
+            ...response.headers,
+        },
+        body: response.body ?? "{}",
+    };
 }

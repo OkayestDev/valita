@@ -1,3 +1,4 @@
+import { NoRouteError } from "../constants/no-route-error";
 import { ValidationError } from "../constants/validation-error";
 import { ErrorHandler } from "../types/error-handler.type";
 import { Options } from "../types/options.type";
@@ -20,6 +21,13 @@ export function errorHandler(err: any | Error): Response {
         return {
             status: 400,
             body: { message: err.message, error: err.error },
+        };
+    }
+
+    if (err instanceof NoRouteError) {
+        return {
+            status: 404,
+            body: { message: err.message },
         };
     }
 
