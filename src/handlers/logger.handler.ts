@@ -19,12 +19,12 @@ export function logRequest(path: string, request: Partial<Request>) {
     if (!loggerConfig.enableRequestLogging) {
         return;
     }
-    loggerConfig.loggingFn(path, request);
+    loggerConfig.loggingFn(`REQUEST: ${path}`, request);
 }
 
 export function logResponse(path: string, response: Response) {
     if (!loggerConfig.enableResponseLogging) {
         return;
     }
-    loggerConfig.loggingFn(path, response);
+    loggerConfig.loggingFn(`RESPONSE: ${path}`, response);
 }

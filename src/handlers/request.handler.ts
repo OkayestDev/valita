@@ -38,7 +38,6 @@ export async function requestHandler({
             method,
         };
 
-        // Execute controller function and handle response
         const response = await invokeRouteFns(routeFns, request);
         logResponse(pathname, response);
         return response;
