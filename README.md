@@ -13,9 +13,9 @@ Valita is a minimal, composable HTTP toolkit for Node.js and AWS Lambda. It give
 ## Installation
 
 ```bash
-npm install valita zod
+npm install valita-server zod
 # or
-yarn add valita zod
+yarn add valita-server zod
 ```
 
 Valita currently targets Node.js 18+ (or the AWS Lambda Node 18 runtime).
@@ -24,7 +24,7 @@ Valita currently targets Node.js 18+ (or the AWS Lambda Node 18 runtime).
 
 ```ts
 // src/app.ts
-import { createServer, get } from "valita";
+import { createServer, get } from "valita-server";
 import { z } from "zod";
 
 // Register routes by importing the file once at startup.
@@ -32,7 +32,7 @@ get(
     "/hello/:name",
     {
         params: z.object({ name: z.string().min(1) }),
-        query: z.object({ excited: z.coerce.boolean().default(false) }),
+        query: z.object({ excited: z.coerce.boolean() }),
     },
     (req) => ({
         status: 200,
@@ -67,7 +67,7 @@ server.listen(3000, () => {
 Middleware are functions that receive the request and either return a `Response` (to short-circuit) or `undefined` to pass control to the next middleware or controller.
 
 ```ts
-import { get, Request } from "valita";
+import { get, Request } from "valita-server";
 
 function authMiddleware(req: Request) {
     if (!req.headers.authorization) {
@@ -89,7 +89,7 @@ get("/secure", authMiddleware, (req) => ({
 Attach a schema object anywhere in the middleware chain. Valita merges the pieces into a Zod object and validates the request before hitting your controller.
 
 ```ts
-import { get } from "valita";
+import { get } from "valita-server";
 import { z } from "zod";
 
 const bookSchema = {
@@ -125,11 +125,9 @@ Use the same routes and controllers with the Lambda adapter:
 // lambda.ts
 require("./routes/book.routes"); // registers routes once
 
-import { createLambda } from "valita";
+import { createLambda } from "valita-server";
 
-export const handler = createLambda({
-    errorHandler: console.error,
-});
+export const handler = createLambda({});
 ```
 
 Deploy it behind API Gateway and Valita will translate the event into the same request object your controllers expect.
@@ -155,7 +153,7 @@ The repository ships with a runnable example under `example/bookstore` that demo
 
 ```bash
 npm install
-ts-node example/bookstore/bookstore.app.ts
+ts-node example/valita-bookstore/bookstore.app.ts
 # Visit http://localhost:3000/books?userId=123
 ```
 
@@ -166,7 +164,7 @@ npm install
 npm run example-serverless
 ```
 
-Then send requests to the endpoints exposed in `example/bookstore/serverless.yml`.
+Then send requests to the endpoints exposed in `example/valita-bookstore/serverless.yml`.
 
 ### Benchmark vs Express.js
 
