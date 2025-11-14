@@ -1,8 +1,7 @@
 import { Response } from "../types/response.type";
 import { Request } from "../types/request.type";
-import { invokeRouteFns, resolvePathAndController } from "../route";
+import { invokeRouteFns, resolveController } from "../route";
 import { Method } from "../constants/enums";
-import { parseRoute } from "../utils/route.utils";
 import { errorHandler } from "./error.handler";
 import { logRequest, logResponse } from "./logger.handler";
 
@@ -26,8 +25,7 @@ export async function requestHandler({
     try {
         logRequest(pathname, { headers, query, body, cookies, method });
 
-        const { path, routeFns } = resolvePathAndController(method, pathname);
-        const params = parseRoute(path, pathname);
+        const { routeFns, params } = resolveController(method, pathname);
 
         const request: Request = {
             params,

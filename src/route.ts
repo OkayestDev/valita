@@ -2,53 +2,47 @@ import { Method } from "./constants/enums";
 import { ControllerFn } from "./types/controller.type";
 import { MiddlewareFn } from "./types/middleware.type";
 import { Schema } from "./types/schema.type";
-import { resolvePathFromUrls } from "./utils/route.utils";
 import { Request } from "./types/request.type";
 import { Response } from "./types/response.type";
 import { validateRequest } from "./utils/zod.utils";
 import { NoRouteError } from "./constants/no-route-error";
+import { createRouteTrie, RouteTrie } from "./trie";
 
 type RouteFns = [...(MiddlewareFn | Schema)[], ControllerFn];
 
-type RouteObj = Record<string, RouteFns>;
-
-let gets: RouteObj = {};
-let posts: RouteObj = {};
-let puts: RouteObj = {};
-let deletes: RouteObj = {};
+let gets = createRouteTrie<RouteFns>(Method.Get);
+let posts = createRouteTrie<RouteFns>(Method.Post);
+let puts = createRouteTrie<RouteFns>(Method.Put);
+let deletes = createRouteTrie<RouteFns>(Method.Delete);
 
 export function init() {
-    gets = {};
-    posts = {};
-    puts = {};
-    deletes = {};
+    gets = createRouteTrie<RouteFns>(Method.Get);
+    posts = createRouteTrie<RouteFns>(Method.Post);
+    puts = createRouteTrie<RouteFns>(Method.Put);
+    deletes = createRouteTrie<RouteFns>(Method.Delete);
 }
 
-function method(method: Method, obj: RouteObj, path: string, fns: RouteFns) {
-    if (obj[path]) {
-        throw new Error(`Route ${method} ${path} already exists`);
-    }
-
-    obj[path] = fns;
+function method(trie: RouteTrie<RouteFns>, path: string, fns: RouteFns) {
+    trie.insert(path, fns);
 }
 
 export function get(path: string, ...routeFns: RouteFns) {
-    return method(Method.Get, gets, path, routeFns);
+    return method(gets, path, routeFns);
 }
 
 export function post(path: string, ...routeFns: RouteFns) {
-    return method(Method.Post, posts, path, routeFns);
+    return method(posts, path, routeFns);
 }
 
 export function put(path: string, ...routeFns: RouteFns) {
-    return method(Method.Put, puts, path, routeFns);
+    return method(puts, path, routeFns);
 }
 
 export function del(path: string, ...routeFns: RouteFns) {
-    return method(Method.Delete, deletes, path, routeFns);
+    return method(deletes, path, routeFns);
 }
 
-export function resolveMethodObj(method: Method): RouteObj | never {
+export function resolveMethodObj(method: Method): RouteTrie<RouteFns> | never {
     switch (method) {
         case Method.Get:
             return gets;
@@ -63,16 +57,16 @@ export function resolveMethodObj(method: Method): RouteObj | never {
     }
 }
 
-export function resolvePathAndController(
+export function resolveController(
     method: Method,
     url: string,
-): { path: string; routeFns: RouteFns } | never {
-    const methodObj = resolveMethodObj(method);
-    const path = resolvePathFromUrls(Object.keys(methodObj), url);
-    if (!path) {
+): { routeFns: RouteFns; params: Record<string, string> } | never {
+    const trie = resolveMethodObj(method);
+    const found = trie.find(url);
+    if (!found) {
         throw new NoRouteError(`Route ${method} ${url} not found`);
     }
-    return { path, routeFns: methodObj[path] };
+    return { params: found.params, routeFns: found.value };
 }
 
 export async function invokeRouteFns(routeFns: RouteFns, request: Request): Promise<Response> {

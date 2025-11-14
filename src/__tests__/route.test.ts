@@ -14,15 +14,15 @@ describe("route", () => {
         it("should add a get route", () => {
             const controller = jest.fn();
             route.get("/get", controller);
-            const { path, routeFns } = route.resolvePathAndController(Method.Get, "/get") || {};
+            const { routeFns, params } = route.resolveController(Method.Get, "/get") || {};
             expect(routeFns?.[0]).toBe(controller);
-            expect(path).toBe("/get");
+            expect(params).toEqual({});
         });
 
         it("should throw an error if the route already exists", () => {
             const controller = jest.fn();
             route.get("/get", controller);
-            expect(() => route.get("/get", controller)).toThrow("Route GET /get already exists");
+            expect(() => route.get("/get", controller)).toThrow("GET /get already exists");
         });
     });
 
@@ -30,9 +30,9 @@ describe("route", () => {
         it("should add a post route", () => {
             const controller = jest.fn();
             route.post("/post", controller);
-            const { path, routeFns } = route.resolvePathAndController(Method.Post, "/post") || {};
+            const { routeFns, params } = route.resolveController(Method.Post, "/post") || {};
             expect(routeFns?.[0]).toBe(controller);
-            expect(path).toBe("/post");
+            expect(params).toEqual({});
         });
     });
 
@@ -40,9 +40,9 @@ describe("route", () => {
         it("should add a put route", () => {
             const controller = jest.fn();
             route.put("/put", controller);
-            const { path, routeFns } = route.resolvePathAndController(Method.Put, "/put") || {};
+            const { routeFns, params } = route.resolveController(Method.Put, "/put") || {};
             expect(routeFns?.[0]).toBe(controller);
-            expect(path).toBe("/put");
+            expect(params).toEqual({});
         });
     });
 
@@ -50,17 +50,16 @@ describe("route", () => {
         it("should add a delete route", () => {
             const controller = jest.fn();
             route.del("/delete", controller);
-            const { path, routeFns } =
-                route.resolvePathAndController(Method.Delete, "/delete") || {};
+            const { routeFns, params } = route.resolveController(Method.Delete, "/delete") || {};
             expect(routeFns?.[0]).toBe(controller);
-            expect(path).toBe("/delete");
+            expect(params).toEqual({});
         });
 
         it("should throw an error if the route already exists", () => {
             const controller = jest.fn();
             route.del("/delete", controller);
             expect(() => route.del("/delete", controller)).toThrow(
-                "Route DELETE /delete already exists",
+                "DELETE /delete already exists",
             );
         });
     });
@@ -122,9 +121,9 @@ describe("route", () => {
                 cookies: {},
                 method: Method.Post,
             };
-            expect(() => route.invokeRouteFns([middleware, schema, controller], request)).rejects.toThrow(
-                ValidationError,
-            );
+            expect(() =>
+                route.invokeRouteFns([middleware, schema, controller], request),
+            ).rejects.toThrow(ValidationError);
         });
     });
 });
