@@ -12,11 +12,7 @@ export function configureErrorHandler(options: Options) {
     errorHandlerConfig.errorHandler = options.errorHandler;
 }
 
-export function errorHandler(err: any | Error): Response {
-    if (errorHandlerConfig.errorHandler) {
-        return errorHandlerConfig.errorHandler(err);
-    }
-
+export const defaultErrorHandler: ErrorHandler = (err: any | Error): Response => {
     if (err instanceof ValidationError) {
         return {
             status: 400,
@@ -35,4 +31,12 @@ export function errorHandler(err: any | Error): Response {
         status: 500,
         body: { message: "Internal server error" },
     };
+};
+
+export function errorHandler(err: any | Error): Response {
+    if (errorHandlerConfig.errorHandler) {
+        return errorHandlerConfig.errorHandler(err);
+    }
+
+    return defaultErrorHandler(err);
 }
