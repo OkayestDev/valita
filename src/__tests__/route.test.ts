@@ -4,6 +4,8 @@ import { z } from "zod";
 import { Request } from "../types/request.type";
 import { MiddlewareFn } from "../types/middleware.type";
 import { ValidationError } from "../constants/validation-error";
+import { Schema } from "../types/schema.type";
+import { Response } from "../types/response.type";
 
 describe("route", () => {
     beforeEach(() => {
@@ -58,9 +60,7 @@ describe("route", () => {
         it("should throw an error if the route already exists", () => {
             const controller = jest.fn();
             route.del("/delete", controller);
-            expect(() => route.del("/delete", controller)).toThrow(
-                "DELETE /delete already exists",
-            );
+            expect(() => route.del("/delete", controller)).toThrow("DELETE /delete already exists");
         });
     });
 
@@ -124,6 +124,47 @@ describe("route", () => {
             expect(() =>
                 route.invokeRouteFns([middleware, schema, controller], request),
             ).rejects.toThrow(ValidationError);
+        });
+
+        it("should invoke global schema if provided", async () => {
+            const controller = jest.fn(() => ({ status: 200, body: { message: "success" } }));
+            const schema: Schema = {
+                body: z.object({
+                    name: z.string(),
+                }),
+            };
+            const request: Request = {
+                params: {},
+                body: { missing: "name" },
+                query: {},
+                headers: {},
+                cookies: {},
+                method: Method.Post,
+            };
+            route.addGlobalMiddleware(schema);
+            expect(() => route.invokeRouteFns([controller], request)).rejects.toThrow(
+                ValidationError,
+            );
+            expect(controller).not.toHaveBeenCalled();
+        });
+
+        it("should invoke global middleware if provided", async () => {
+            const middleware = jest.fn(
+                (): Response => ({ status: 401, body: { message: "unauthorized" } }),
+            );
+            const controller = jest.fn();
+            const request: Request = {
+                params: {},
+                body: { name: "John Doe" },
+                query: {},
+                headers: {},
+                cookies: {},
+                method: Method.Post,
+            };
+            route.addGlobalMiddleware(middleware);
+            const res = await route.invokeRouteFns([controller], request);
+            expect(controller).not.toHaveBeenCalled();
+            expect(res.status).toBe(401);
         });
     });
 });

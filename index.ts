@@ -1,4 +1,4 @@
-export { get, post, put, del } from "./src/route";
+export { get, post, put, del, addGlobalMiddleware } from "./src/route";
 export { createServer } from "./src/server";
 export { createLambda } from "./src/lambda";
 export { ValidationError } from "./src/constants/validation-error";

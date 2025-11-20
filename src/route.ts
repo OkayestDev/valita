@@ -10,12 +10,15 @@ import { createRouteTrie, RouteTrie } from "./trie";
 
 type RouteFns = [...(MiddlewareFn | Schema)[], ControllerFn];
 
+let globalMiddlewares: (MiddlewareFn | Schema)[] = [];
+
 let gets = createRouteTrie<RouteFns>(Method.Get);
 let posts = createRouteTrie<RouteFns>(Method.Post);
 let puts = createRouteTrie<RouteFns>(Method.Put);
 let deletes = createRouteTrie<RouteFns>(Method.Delete);
 
 export function init() {
+    globalMiddlewares = [];
     gets = createRouteTrie<RouteFns>(Method.Get);
     posts = createRouteTrie<RouteFns>(Method.Post);
     puts = createRouteTrie<RouteFns>(Method.Put);
@@ -69,19 +72,39 @@ export function resolveController(
     return { params: found.params, routeFns: found.value };
 }
 
-export async function invokeRouteFns(routeFns: RouteFns, request: Request): Promise<Response> {
-    for (let i = 0; i < routeFns.length - 1; i++) {
-        if (typeof routeFns[i] === "function") {
-            const res = await (routeFns[i] as MiddlewareFn)(request);
+export function addGlobalMiddleware(middleware: MiddlewareFn | Schema) {
+    globalMiddlewares.push(middleware);
+}
+
+async function invokeMiddlewares(
+    middlewares: (MiddlewareFn | Schema)[],
+    request: Request,
+): Promise<Response | undefined | never> {
+    for (const middleware of middlewares) {
+        if (typeof middleware === "function") {
+            const res = await (middleware as MiddlewareFn)(request);
             if (res) {
                 return res as Response;
             }
             continue;
         }
 
-        if (typeof routeFns[i] === "object") {
-            validateRequest(routeFns[i] as Schema, request);
+        if (typeof middleware === "object") {
+            validateRequest(middleware as Schema, request);
         }
+    }
+    return undefined;
+}
+
+export async function invokeRouteFns(routeFns: RouteFns, request: Request): Promise<Response> {
+    const globalMiddlewareRes = await invokeMiddlewares(globalMiddlewares, request);
+    if (globalMiddlewareRes) {
+        return globalMiddlewareRes as Response;
+    }
+
+    const routeMiddlewareRes = await invokeMiddlewares(routeFns.slice(0, -1), request);
+    if (routeMiddlewareRes) {
+        return routeMiddlewareRes as Response;
     }
 
     return (routeFns[routeFns.length - 1] as ControllerFn)(request);
