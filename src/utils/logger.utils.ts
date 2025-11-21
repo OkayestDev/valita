@@ -1,5 +1,5 @@
 import pino from "pino";
-const logger = pino();
+const logger = pino(pino.destination(1));
 
 export const log = {
     info: (message: string, obj: any) => logger.info(obj, message),

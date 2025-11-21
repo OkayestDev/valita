@@ -11,14 +11,20 @@ import { configureErrorHandler } from "./handlers/error.handler";
 
 function parseBody(req: http.IncomingMessage): Promise<Record<string, any>> {
     return new Promise((resolve, reject) => {
-        let data = "";
+        const chunks: Buffer[] = [];
+
         req.on("data", (chunk) => {
-            data += chunk;
+            chunks.push(chunk);
         });
         req.on("end", () => {
-            resolve(safeParseJson(data));
+            try {
+                const body = Buffer.concat(chunks).toString();
+                resolve(safeParseJson(body));
+            } catch (err) {
+                reject(err);
+            }
         });
-        req.on("error", (err) => reject(err));
+        req.on("error", reject);
     });
 }
 
@@ -26,10 +32,10 @@ export const serverCallback = (options: Options) => {
     configureErrorHandler(options);
     configureLogger(options);
     return async (req: http.IncomingMessage, httpResponse: http.ServerResponse) => {
-        const pathname = req.url?.split("?")[0] || "/";
-        const query = querystring.parse(req.url?.split("?")[1] || "");
+        const [pathname, querystr] = req.url?.split("?") || [];
+        const query = querystring.parse(querystr || "");
         const body = await parseBody(req);
-        const cookies = parseCookies((req.headers.cookie || req.headers.Cookie || "") as string);
+        const cookies = parseCookies(req.headers.cookie as string);
 
         const method = (req.method || Method.Get) as Method;
 
