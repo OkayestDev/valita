@@ -4,12 +4,10 @@ import { ErrorHandler } from "../types/error-handler.type";
 import { Options } from "../types/options.type";
 import { Response } from "../types/response.type";
 
-const errorHandlerConfig: { errorHandler: ErrorHandler | undefined } = {
-    errorHandler: undefined,
-};
+let errorHandlerFn: ErrorHandler | undefined = undefined;
 
 export function configureErrorHandler(options: Options) {
-    errorHandlerConfig.errorHandler = options.errorHandler;
+    errorHandlerFn = options.errorHandler ?? undefined;
 }
 
 export const defaultErrorHandler: ErrorHandler = (err: any | Error): Response => {
@@ -34,8 +32,8 @@ export const defaultErrorHandler: ErrorHandler = (err: any | Error): Response =>
 };
 
 export function errorHandler(err: any | Error): Response {
-    if (errorHandlerConfig.errorHandler) {
-        return errorHandlerConfig.errorHandler(err);
+    if (errorHandlerFn) {
+        return errorHandlerFn(err);
     }
 
     return defaultErrorHandler(err);

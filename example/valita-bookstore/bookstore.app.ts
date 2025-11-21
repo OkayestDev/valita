@@ -11,18 +11,10 @@ function errorHandler(err: Error): Response {
     };
 }
 
-function loggingFn(path: string, obj: Partial<Response | Request>) {
-    console.log("Path:", path);
-    console.log("Object:", {
-        ...obj,
-        headers: undefined,
-    });
-}
 const server = createServer({
     errorHandler,
     enableRequestLogging: true,
-    enableResponseLogging: true,
-    loggingFn,
+    enableResponseLogging: false,
 });
 
 server.listen(3000, () => {

@@ -1,5 +1,5 @@
 type TrieNode<T> = {
-    children: Map<string, TrieNode<T>>;
+    children: Record<string, TrieNode<T>>;
     paramChild?: TrieNode<T>; // for :param
     wildcardChild?: TrieNode<T>; // for *
     paramName?: string;
@@ -11,29 +11,46 @@ export type RouteTrie<T> = {
     insert: (path: string, value: T) => void;
 };
 
+function quickSplit(path: string): string[] {
+    const out = [];
+    let start = 0;
+    for (let i = 0; i < path.length; i++) {
+        if (path[i] === "/") {
+            if (i > start) {
+                out.push(path.slice(start, i));
+            }
+            start = i + 1;
+        }
+    }
+    if (start < path.length) {
+        out.push(path.slice(start));
+    }
+    return out;
+}
+
 export function createRouteTrie<T>(name: string): RouteTrie<T> {
-    const root: TrieNode<T> = { children: new Map() };
+    const root: TrieNode<T> = { children: {} };
 
     function insert(path: string, value: T) {
-        const segments = path.split("/").filter(Boolean);
+        const segments = quickSplit(path);
         let node = root;
 
         for (const segment of segments) {
             if (segment === "*") {
                 if (!node.wildcardChild) {
-                    node.wildcardChild = { children: new Map() };
+                    node.wildcardChild = { children: {} };
                 }
                 node = node.wildcardChild!;
             } else if (segment.startsWith(":")) {
                 if (!node.paramChild) {
-                    node.paramChild = { children: new Map(), paramName: segment.slice(1) };
+                    node.paramChild = { children: {}, paramName: segment.slice(1) };
                 }
                 node = node.paramChild;
             } else {
-                if (!node.children.has(segment)) {
-                    node.children.set(segment, { children: new Map() });
+                if (!node.children[segment]) {
+                    node.children[segment] = { children: {} };
                 }
-                node = node.children.get(segment)!;
+                node = node.children[segment];
             }
         }
         if (node.value !== undefined) {
@@ -42,50 +59,54 @@ export function createRouteTrie<T>(name: string): RouteTrie<T> {
         node.value = value;
     }
 
-    function find(path: string): { value: T; params: Record<string, string> } | undefined {
-        const segments = path.split("/").filter(Boolean);
-        const params: Record<string, string> = {};
-
-        function search(
-            node: TrieNode<T>,
-            idx: number,
-        ): { node: TrieNode<T>; params: Record<string, string> } | undefined {
-            if (idx === segments.length) {
-                if (node.value !== undefined) {
-                    return { node, params: { ...params } };
-                }
-                return undefined;
+    function search(
+        node: TrieNode<T>,
+        idx: number,
+        segments: string[],
+        params: Record<string, string> = {},
+    ): { node: TrieNode<T>; params: Record<string, string> } | undefined {
+        if (idx === segments.length) {
+            if (node.value !== undefined) {
+                return { node, params };
             }
-            const segment = segments[idx];
-
-            // Exact match first
-            if (node.children.has(segment)) {
-                const result = search(node.children.get(segment)!, idx + 1);
-                if (result) {
-                    return result;
-                }
-            }
-
-            // Param match
-            if (node.paramChild) {
-                params[node.paramChild.paramName!] = segment;
-                const result = search(node.paramChild, idx + 1);
-                if (result) return result;
-                delete params[node.paramChild.paramName!]; // backtrack
-            }
-
-            // Wildcard match (matches the rest, attaches to *)
-            if (node.wildcardChild) {
-                params["*"] = segments.slice(idx).join("/");
-                if (node.wildcardChild.value !== undefined) {
-                    return { node: node.wildcardChild, params: { ...params } };
-                }
-            }
-
             return undefined;
         }
+        const segment = segments[idx];
 
-        const found = search(root, 0);
+        // Exact match first
+        if (node.children[segment]) {
+            const result = search(node.children[segment], idx + 1, segments, params);
+            if (result) {
+                return result;
+            }
+        }
+
+        // Param match
+        if (node.paramChild) {
+            params[node.paramChild.paramName!] = segment;
+            const result = search(node.paramChild, idx + 1, segments, params);
+            if (result) {
+                return result;
+            }
+            delete params[node.paramChild.paramName!]; // backtrack
+        }
+
+        // Wildcard match (matches the rest, attaches to *)
+        if (node.wildcardChild) {
+            params["*"] = segments.slice(idx).join("/");
+            if (node.wildcardChild.value !== undefined) {
+                return { node: node.wildcardChild, params };
+            }
+        }
+
+        return undefined;
+    }
+
+    function find(path: string): { value: T; params: Record<string, string> } | undefined {
+        const segments = quickSplit(path);
+        const params: Record<string, string> = {};
+
+        const found = search(root, 0, segments, params);
         if (found) {
             return { value: found.node.value!, params: found.params };
         }

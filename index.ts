@@ -4,6 +4,7 @@ export { createLambda } from "./src/lambda";
 export { ValidationError } from "./src/constants/validation-error";
 export { NoRouteError } from "./src/constants/no-route-error";
 export { defaultErrorHandler } from "./src/handlers/error.handler";
+export { log } from "./src/utils/logger.utils";
 
 export type { Request } from "./src/types/request.type";
 export type { Response } from "./src/types/response.type";
