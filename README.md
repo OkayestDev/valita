@@ -52,7 +52,7 @@ const server = createServer({
     },
     enableRequestLogging: true,
     enableResponseLogging: true,
-    loggerFn: console.log
+    loggerFn: console.log,
 });
 
 server.listen(3000, () => {
@@ -107,11 +107,11 @@ If validation fails, Valita throws a `ValidationError` that is translated into:
 
 ```json
 {
-  "status": 400,
-  "body": {
-    "message": "Validation failed",
-    "error": { "...": "zod-formatted error details" }
-  }
+    "status": 400,
+    "body": {
+        "message": "Validation failed",
+        "error": { "...": "zod-formatted error details" }
+    }
 }
 ```
 
@@ -145,8 +145,8 @@ Both `createServer` and `createLambda` accept an optional `Options` object:
 
 The repository ships with a runnable example under `example/bookstore` that demonstrates:
 
-- Registering routes with middleware and schemas  
-- Serving the same routes via a local HTTP server (`bookstore.app.ts`)  
+- Registering routes with middleware and schemas
+- Serving the same routes via a local HTTP server (`bookstore.app.ts`)
 - Exporting the same logic as an AWS Lambda handler (`bookstore-lambda.ts`)
 
 ### Try it locally
@@ -165,6 +165,23 @@ npm run example-serverless
 ```
 
 Then send requests to the endpoints exposed in `example/valita-bookstore/serverless.yml`.
+
+### Logging
+
+Valita uses [Pino](https://www.npmjs.com/package/pino) for logging by default. If providing a custom logging function, I highly recommend avoiding using console as logging is quite expensive (can cut throughput in half if using request & response logging).
+Valita exposes it's pino logger.
+
+```ts
+import { log, createServer } from "valita-server";
+
+function loggingFn(message: string, obj: any) {
+    log.info(message, obj);
+}
+
+createServer({
+    loggingFn,
+}).listen(3000);
+```
 
 ### Benchmark vs Express.js
 
@@ -189,4 +206,3 @@ Issues and pull requests are welcome!
 ## License
 
 MIT © OkayestDev
-
