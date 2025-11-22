@@ -8,7 +8,7 @@ import { logRequest, logResponse } from "./logger.handler";
 type RequestHandlerParams = {
     headers: Record<string, string>;
     query: Record<string, string>;
-    body: Record<string, any>;
+    body: Record<string, any> | undefined;
     cookies: Record<string, string>;
     method: Method;
     pathname: string;
@@ -30,7 +30,7 @@ export async function requestHandler({
         const request: Request = {
             params,
             query,
-            body,
+            body: body ?? {},
             headers,
             cookies,
             method,

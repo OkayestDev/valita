@@ -9,7 +9,7 @@ import { Options } from "./types/options.type";
 import { configureLogger } from "./handlers/logger.handler";
 import { configureErrorHandler } from "./handlers/error.handler";
 
-function parseBody(req: http.IncomingMessage): Promise<Record<string, any>> {
+function parseBody(req: http.IncomingMessage): Promise<Record<string, any> | undefined> {
     return new Promise((resolve, reject) => {
         const chunks: Buffer[] = [];
 
@@ -17,12 +17,8 @@ function parseBody(req: http.IncomingMessage): Promise<Record<string, any>> {
             chunks.push(chunk);
         });
         req.on("end", () => {
-            try {
-                const body = Buffer.concat(chunks).toString();
-                resolve(safeParseJson(body));
-            } catch (err) {
-                reject(err);
-            }
+            const body = Buffer.concat(chunks).toString();
+            resolve(safeParseJson(body));
         });
         req.on("error", reject);
     });
@@ -53,6 +49,5 @@ export const serverCallback = (options: Options) => {
 };
 
 export function createServer(options: Options = {}): http.Server {
-    const server = http.createServer(serverCallback(options));
-    return server;
+    return http.createServer(serverCallback(options));
 }

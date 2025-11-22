@@ -8,10 +8,10 @@ describe("jsonUtils", () => {
             expect(result).toEqual({ hello: "world" });
         });
 
-        it("should return an empty object if the json is invalid", () => {
+        it("should return an undefined if the json is invalid", () => {
             const json = "invalid json";
             const result = safeParseJson(json);
-            expect(result).toEqual({});
+            expect(result).toEqual(undefined);
         });
     });
 });
