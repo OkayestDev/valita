@@ -6,7 +6,6 @@ import { getBookSchema } from "../schemas/book.schemas";
 
 const router = Router();
 
-// Validation middleware for params
 function validateBookParams(req: Request, res: Response, next: NextFunction) {
     const result = getBookSchema.safeParse({ id: req.params.id });
     if (!result.success) {

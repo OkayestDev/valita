@@ -1,7 +1,7 @@
 & bun ./express-bookstore/bookstore.app.ts &
 & bun ./valita-bookstore/bookstore.app.ts &
 
-Start-Sleep -Seconds 15
+Start-Sleep -Seconds 30
 
 $route = "/books/1?userId=123";
 

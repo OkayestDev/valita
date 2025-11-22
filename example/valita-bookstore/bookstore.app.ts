@@ -1,7 +1,7 @@
 require("./routes/book.routes");
 
 import { Response } from "../../src/types/response.type";
-import { createServer } from "../../index";
+import { createServer, log } from "../../index";
 
 function errorHandler(err: Error): Response {
     console.log("Error!", err);
@@ -11,10 +11,18 @@ function errorHandler(err: Error): Response {
     };
 }
 
+function loggingFn(message: string, obj: Record<string, any>) {
+    log.info(message, {
+        ...obj,
+        headers: undefined,
+    });
+}
+
 const server = createServer({
     errorHandler,
     enableRequestLogging: true,
     enableResponseLogging: false,
+    loggingFn,
 });
 
 server.listen(3000, () => {
