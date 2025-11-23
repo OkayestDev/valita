@@ -5,7 +5,7 @@ const defaultOptions = {
     inject: () => ({
         timestamp: new Date().toISOString(),
     }),
-    isPrettyPrint: true,
+    isPrettyPrint: false,
 };
 
 export let logger = Logger(defaultOptions);

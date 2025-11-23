@@ -22,7 +22,7 @@ yarn add valita-server zod
 
 ```ts
 // src/app.ts
-import { createServer, get } from "valita-server";
+import { createServer, get, log } from "valita-server";
 import { z } from "zod";
 
 // Register routes by importing the file once at startup.
@@ -50,7 +50,7 @@ const server = createServer({
     },
     enableRequestLogging: true,
     enableResponseLogging: true,
-    loggerFn: console.log,
+    loggerFn: log.info,
 });
 
 server.listen(3000, () => {
