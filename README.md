@@ -7,7 +7,7 @@ Valita is a minimal, composable HTTP toolkit for Node.js and AWS Lambda. It give
 - **Routing primitives** — Register `get`, `post`, `put`, and `del` routes with familiar path patterns and Express-style params (`/books/:id`).
 - **Middleware pipeline** — Chain any number of middleware functions before your controller. Each middleware can short-circuit by returning a response or continue by returning `undefined`.
 - **Schema validation** — Attach Zod schemas to `params`, `query`, `body`, `headers`, and `cookies`. Requests are validated automatically and fail with consistent `400` responses.
-- **Server + Lambda adapters** — Use `createServer` for Node’s `http` module or `createLambda` for AWS Lambda/API Gateway—same routes, same handlers.
+- **Server + Lambda adapters** — Use `createServer` for Node’s `http` module or `createLambda` for AWS Lambda/API Gateway — same routes, same handlers.
 - **Typed contracts** — `Request`, `Response`, `Schema`, `ControllerFn`, and `MiddlewareFn` types ship with the library so your editor sees the same shapes Valita expects.
 
 ## Installation
@@ -17,8 +17,6 @@ npm install valita-server zod
 # or
 yarn add valita-server zod
 ```
-
-Valita currently targets Node.js 18+ (or the AWS Lambda Node 18 runtime).
 
 ## Quick Start (Node HTTP Server)
 
@@ -168,8 +166,8 @@ Then send requests to the endpoints exposed in `example/valita-bookstore/serverl
 
 ### Logging
 
-Valita uses [Pino](https://www.npmjs.com/package/pino) for logging by default. If providing a custom logging function, I highly recommend avoiding using console as logging is quite expensive (can cut throughput in half if using request & response logging).
-Valita exposes it's pino logger.
+Valita uses [batch-stdout](https://www.npmjs.com/package/batch-stdout?activeTab=readme) for logging by default. If providing a custom logging function, I highly recommend avoiding using console/process.stdout as logging is quite expensive (can cut throughput in half if using request & response logging).
+Valita exposes it's batch-stdout logger.
 
 ```ts
 import { log, createServer } from "valita-server";

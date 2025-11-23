@@ -4,7 +4,7 @@ import { Response } from "../../src/types/response.type";
 import { createServer, log } from "../../index";
 
 function errorHandler(err: Error): Response {
-    console.log("Error!", err);
+    log.error("Error!", err);
     return {
         status: 500,
         body: { message: "Internal server error" },
@@ -23,6 +23,12 @@ const server = createServer({
     enableRequestLogging: true,
     enableResponseLogging: false,
     loggingFn,
+    batchStdoutOptions: {
+        inject: () => ({
+            timestamp: new Date().toISOString(),
+        }),
+        isPrettyPrint: true,
+    },
 });
 
 server.listen(3000, () => {

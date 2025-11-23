@@ -1,26 +1,31 @@
-import p from "pino";
-export const pino = p(
-    {
-        formatters: {
-            level(label: string) {
-                return {
-                    level: label,
-                };
-            },
-            bindings() {
-                return {};
-            },
-        },
-        timestamp: p.stdTimeFunctions.isoTime,
-    },
-    p.destination(1),
-);
+import { logger as Logger } from "batch-stdout";
+import { Options } from "../types/options.type";
+
+const defaultOptions = {
+    inject: () => ({
+        timestamp: new Date().toISOString(),
+    }),
+    isPrettyPrint: true,
+};
+
+export let logger = Logger(defaultOptions);
+
+export function setLoggerOptions(options: Options) {
+    if (options.batchStdoutOptions) {
+        logger = Logger({
+            ...defaultOptions,
+            ...options.batchStdoutOptions,
+        });
+    }
+}
+
+export function flushLogger() {
+    logger.flush();
+}
 
 export const log = {
-    info: (message: string, obj: any) => pino.info(obj, message),
-    error: (message: string, obj: any) => pino.error(obj, message),
-    warn: (message: string, obj: any) => pino.warn(obj, message),
-    debug: (message: string, obj: any) => pino.debug(obj, message),
-    trace: (message: string, obj: any) => pino.trace(obj, message),
-    fatal: (message: string, obj: any) => pino.fatal(obj, message),
+    info: (message: string, obj: any) => logger.info(obj, message),
+    error: (message: string, obj: any) => logger.error(obj, message),
+    warn: (message: string, obj: any) => logger.warning(obj, message),
+    debug: (message: string, obj: any) => logger.debug(obj, message),
 };

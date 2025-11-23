@@ -8,6 +8,7 @@ import { requestHandler } from "./handlers/request.handler";
 import { Options } from "./types/options.type";
 import { configureLogger } from "./handlers/logger.handler";
 import { configureErrorHandler } from "./handlers/error.handler";
+import { setLoggerOptions } from "./utils/logger.utils";
 
 function parseBody(req: http.IncomingMessage): Promise<Record<string, any> | undefined> {
     return new Promise((resolve, reject) => {
@@ -27,6 +28,7 @@ function parseBody(req: http.IncomingMessage): Promise<Record<string, any> | und
 export const serverCallback = (options: Options) => {
     configureErrorHandler(options);
     configureLogger(options);
+    setLoggerOptions(options);
     return async (req: http.IncomingMessage, httpResponse: http.ServerResponse) => {
         const [pathname, querystr] = req.url?.split("?") || [];
         const query = querystring.parse(querystr || "");

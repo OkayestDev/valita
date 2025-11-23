@@ -4,6 +4,7 @@ import { invokeRouteFns, resolveController } from "../route";
 import { Method } from "../constants/enums";
 import { errorHandler } from "./error.handler";
 import { logRequest, logResponse } from "./logger.handler";
+import { flushLogger } from "../utils/logger.utils";
 
 type RequestHandlerParams = {
     headers: Record<string, string>;
@@ -38,6 +39,7 @@ export async function requestHandler({
 
         const response = await invokeRouteFns(routeFns, request);
         logResponse(pathname, response);
+        new Promise(() => flushLogger());
         return response;
     } catch (err: any) {
         return errorHandler(err);

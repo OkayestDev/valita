@@ -1,6 +1,6 @@
 {
     "name": "valita-server",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "main": "index.js",
     "repository": {
         "type": "git",
@@ -34,7 +34,7 @@
         "typescript": "^5.6.3"
     },
     "dependencies": {
-        "pino": "^10.1.0",
+        "batch-stdout": "^0.1.0",
         "zod": "^4.1.12"
     },
     "keywords": [
