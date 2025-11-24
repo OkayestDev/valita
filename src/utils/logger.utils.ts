@@ -24,8 +24,8 @@ export function flushLogger() {
 }
 
 export const log = {
-    info: (message: string, obj: any) => logger.info(obj, message),
-    error: (message: string, obj: any) => logger.error(obj, message),
-    warn: (message: string, obj: any) => logger.warning(obj, message),
-    debug: (message: string, obj: any) => logger.debug(obj, message),
+    info: (...items: any[]) => logger.info(...items),
+    error: (...items: any[]) => logger.error(...items),
+    warn: (...items: any[]) => logger.warning(...items),
+    debug: (...items: any[]) => logger.debug(...items),
 };
