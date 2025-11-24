@@ -38,6 +38,21 @@ describe("loggerHandler", () => {
             logRequest("test", request);
             expect(logSpy).not.toHaveBeenCalled();
         });
+
+        it('should use customs logging function if provided', () => {
+            const loggingFn = jest.fn();
+            configureLogger({ enableRequestLogging: true, loggingFn });
+            const request = {
+                path: "test",
+                headers: { "content-type": "application/json" },
+                query: { var: "1" },
+                body: { hello: "world" },
+                cookies: { session: "123" },
+                method: "GET",
+            };
+            logRequest("test", request);
+            expect(loggingFn).toHaveBeenCalledWith("REQUEST: test", request);
+        });
     });
 
     describe("logResponse", () => {
@@ -55,6 +70,14 @@ describe("loggerHandler", () => {
             configureLogger({ enableResponseLogging: false });
             logResponse("test", response);
             expect(logSpy).not.toHaveBeenCalled();
+        });
+
+        it('should use customs logging function if provided', () => {
+            const loggingFn = jest.fn();
+            configureLogger({ enableResponseLogging: true, loggingFn });
+            const response = { status: 200, body: { message: "big success!" } };
+            logResponse("test", response);
+            expect(loggingFn).toHaveBeenCalledWith("RESPONSE: test", response);
         });
     });
 });

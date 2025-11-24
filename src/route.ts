@@ -5,7 +5,7 @@ import { Schema } from "./types/schema.type";
 import { Request } from "./types/request.type";
 import { Response } from "./types/response.type";
 import { validateRequest } from "./utils/zod.utils";
-import { NoRouteError } from "./constants/no-route-error";
+import { NoRouteError } from "./constants/no-route.error";
 import { createRouteTrie, RouteTrie } from "./trie";
 
 type RouteFns = [...(MiddlewareFn | Schema)[], ControllerFn];
@@ -25,24 +25,20 @@ export function init() {
     deletes = createRouteTrie<RouteFns>(Method.Delete);
 }
 
-function method(trie: RouteTrie<RouteFns>, path: string, fns: RouteFns) {
-    trie.insert(path, fns);
-}
-
 export function get(path: string, ...routeFns: RouteFns) {
-    return method(gets, path, routeFns);
+    return gets.insert(path, routeFns);
 }
 
 export function post(path: string, ...routeFns: RouteFns) {
-    return method(posts, path, routeFns);
+    return posts.insert(path, routeFns);
 }
 
 export function put(path: string, ...routeFns: RouteFns) {
-    return method(puts, path, routeFns);
+    return puts.insert(path, routeFns);
 }
 
 export function del(path: string, ...routeFns: RouteFns) {
-    return method(deletes, path, routeFns);
+    return deletes.insert(path, routeFns);
 }
 
 export function resolveMethodObj(method: Method): RouteTrie<RouteFns> | never {

@@ -3,7 +3,7 @@ import * as route from "../route";
 import { z } from "zod";
 import { Request } from "../types/request.type";
 import { MiddlewareFn } from "../types/middleware.type";
-import { ValidationError } from "../constants/validation-error";
+import { ValidationError } from "../constants/validation.error";
 import { Schema } from "../types/schema.type";
 import { Response } from "../types/response.type";
 

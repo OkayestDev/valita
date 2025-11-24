@@ -1,4 +1,4 @@
-import { ValidationError } from "../../constants/validation-error";
+import { ValidationError } from "../../constants/validation.error";
 import { configureErrorHandler, errorHandler } from "../error.handler";
 
 describe("errorHandler", () => {

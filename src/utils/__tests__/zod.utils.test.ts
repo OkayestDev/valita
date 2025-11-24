@@ -1,4 +1,4 @@
-import { ValidationError } from "../../constants/validation-error";
+import { ValidationError } from "../../constants/validation.error";
 import { Request } from "../../types/request.type";
 import { validateRequest } from "../zod.utils";
 import { z } from "zod";

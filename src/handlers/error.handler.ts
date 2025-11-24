@@ -1,5 +1,5 @@
-import { NoRouteError } from "../constants/no-route-error";
-import { ValidationError } from "../constants/validation-error";
+import { NoRouteError } from "../constants/no-route.error";
+import { ValidationError } from "../constants/validation.error";
 import { ErrorHandler } from "../types/error-handler.type";
 import { Options } from "../types/options.type";
 import { Response } from "../types/response.type";

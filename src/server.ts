@@ -25,7 +25,7 @@ function parseBody(req: http.IncomingMessage): Promise<Record<string, any> | und
     });
 }
 
-export const serverCallback = (options: Options) => {
+export const serverCallback = (options: Options = {}) => {
     configureErrorHandler(options);
     configureLogger(options);
     setLoggerOptions(options);

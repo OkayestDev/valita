@@ -1,7 +1,7 @@
 import { Schema } from "../types/schema.type";
 import { Request } from "../types/request.type";
 import z from "zod";
-import { ValidationError } from "../constants/validation-error";
+import { ValidationError } from "../constants/validation.error";
 
 export function validateRequest(schema: Schema, request: Request): void | never {
     const zodSchema = z.object(schema);

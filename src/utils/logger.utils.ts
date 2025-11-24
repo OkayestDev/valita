@@ -1,7 +1,7 @@
 import { logger as Logger } from "batch-stdout";
 import { Options } from "../types/options.type";
 
-const defaultOptions = {
+export const defaultOptions = {
     inject: () => ({
         timestamp: new Date().toISOString(),
     }),
