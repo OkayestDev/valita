@@ -7,7 +7,7 @@ function errorHandler(err: Error): Response {
     log.error("Error!", err);
     return {
         status: 500,
-        body: { message: "Internal server error" },
+        body: { message: "Internal server error from example api" },
     };
 }
 
@@ -29,6 +29,15 @@ const server = createServer({
         }),
         isPrettyPrint: true,
     },
+    optionsHandler: () => ({
+        status: 200,
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            "some-random-header": "some-random-value",
+        },
+    }),
 });
 
 server.listen(3000, () => {

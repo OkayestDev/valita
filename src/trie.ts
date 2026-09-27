@@ -1,3 +1,5 @@
+import { splitStr } from "./utils/string.utils";
+
 type TrieNode<T> = {
     children: Record<string, TrieNode<T>>;
     paramChild?: TrieNode<T>; // for :param
@@ -6,33 +8,18 @@ type TrieNode<T> = {
     value?: T;
 };
 
+const ROUTE_DELIMITER = "/";
+
 export type RouteTrie<T> = {
     find: (path: string) => { value: T; params: Record<string, string> } | undefined;
     insert: (path: string, value: T) => void;
 };
 
-function quickSplit(path: string): string[] {
-    const out = [];
-    let start = 0;
-    for (let i = 0; i < path.length; i++) {
-        if (path[i] === "/") {
-            if (i > start) {
-                out.push(path.slice(start, i));
-            }
-            start = i + 1;
-        }
-    }
-    if (start < path.length) {
-        out.push(path.slice(start));
-    }
-    return out;
-}
-
 export function createRouteTrie<T>(name: string): RouteTrie<T> {
     const root: TrieNode<T> = { children: {} };
 
     function insert(path: string, value: T) {
-        const segments = quickSplit(path);
+        const segments = splitStr(path);
         let node = root;
 
         for (const segment of segments) {
@@ -103,7 +90,7 @@ export function createRouteTrie<T>(name: string): RouteTrie<T> {
     }
 
     function find(path: string): { value: T; params: Record<string, string> } | undefined {
-        const segments = quickSplit(path);
+        const segments = splitStr(path);
         const params: Record<string, string> = {};
 
         const found = search(root, 0, segments, params);

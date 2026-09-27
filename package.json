@@ -1,19 +1,19 @@
 {
     "name": "valita-server",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "main": "index.js",
     "repository": {
         "type": "git",
         "url": "https://github.com/OkayestDev/valita.git"
     },
     "scripts": {
-        "build": "tsc",
+        "build": "tsc -p tsconfig.build.json",
         "lint": "eslint . --ext .ts",
         "test": "node --inspect=9229 ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles",
         "example-serverless": "serverless offline start --stage dev -c ./example/bookstore/serverless.yml",
         "example-server": "node --inspect=9229 -r ts-node/register ./example/bookstore/bookstore.app.ts",
         "publish:latest": "npm run build && npm publish --access public",
-        "hotbun": "bun --hot ./example/valita-bookstore/bookstore.app.ts"
+        "hotbun": "bun --inspect=127.0.0.1:6499/hotbun --hot ./example/valita-bookstore/bookstore.app.ts"
     },
     "author": "OkayestDev",
     "license": "MIT",

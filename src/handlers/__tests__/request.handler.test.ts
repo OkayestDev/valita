@@ -3,6 +3,8 @@ import { requestHandler } from "../request.handler";
 import { Response } from "../../types/response.type";
 import { ControllerFn } from "../../types/controller.type";
 import * as route from "../../route";
+import { configureErrorHandler } from "../error.handler";
+import * as loggerUtils from "../../utils/logger.utils";
 
 describe("requestHandler", () => {
     it("should return a 404 response if the route is not found", async () => {
@@ -37,6 +39,37 @@ describe("requestHandler", () => {
         });
         expect(response.status).toBe(200);
         expect(response.body).toEqual({ message: "big success!" });
+    });
+
+    it("should flush logs when the error handler returns a response", async () => {
+        route.init();
+        const flushSpy = jest.spyOn(loggerUtils, "flushLogger").mockImplementation(() => undefined);
+        configureErrorHandler({
+            errorHandler: () => ({
+                status: 500,
+                body: { message: "Internal server error from example api" },
+            }),
+        });
+        route.get("/books", () => {
+            throw new Error("boom");
+        });
+
+        const response = await requestHandler({
+            headers: {},
+            query: {},
+            body: {},
+            cookies: {},
+            method: Method.Get,
+            pathname: "/books",
+        });
+
+        expect(response).toEqual({
+            status: 500,
+            body: { message: "Internal server error from example api" },
+        });
+        expect(flushSpy).toHaveBeenCalled();
+        configureErrorHandler({});
+        flushSpy.mockRestore();
     });
 
     it("should handle unsupported methods", async () => {

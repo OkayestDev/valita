@@ -39,9 +39,10 @@ export async function requestHandler({
 
         const response = await invokeRouteFns(routeFns, request);
         logResponse(pathname, response);
-        new Promise(() => flushLogger());
         return response;
     } catch (err: any) {
         return errorHandler(err);
+    } finally {
+        new Promise(() => flushLogger());
     }
 }

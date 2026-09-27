@@ -5,6 +5,7 @@ Valita is a minimal, composable HTTP toolkit for Node.js and AWS Lambda. It give
 ## Features
 
 - **Routing primitives** — Register `get`, `post`, `put`, and `del` routes with familiar path patterns and Express-style params (`/books/:id`).
+- **Global OPTIONS handler** — Set `optionsHandler` on `createServer` to answer `OPTIONS` requests (such as CORS preflights) when no route matches.
 - **Middleware pipeline** — Chain any number of middleware functions before your controller. Each middleware can short-circuit by returning a response or continue by returning `undefined`.
 - **Schema validation** — Attach Zod schemas to `params`, `query`, `body`, `headers`, and `cookies`. Requests are validated automatically and fail with consistent `400` responses.
 - **Server + Lambda adapters** — Use `createServer` for Node’s `http` module or `createLambda` for AWS Lambda/API Gateway — same routes, same handlers.
@@ -138,6 +139,28 @@ Both `createServer` and `createLambda` accept an optional `Options` object:
 - `enableRequestLogging?: boolean` — When `true`, every request is passed to `logRequest(path, data)`.
 - `enableResponseLogging?: boolean` — When `true`, every response is passed to `logResponse(path, response)`.
 - `loggingFn?: LoggerFn` — Override the logging function used by both `logRequest` and `logResponse` (defaults to `console.log`).
+- `optionsHandler?: OptionsHandler` — Global handler for `OPTIONS` requests that do not match a registered route. `createServer` installs this handler. It receives the `Request` and returns a `Response` or `Promise<Response>`. If omitted, Valita responds with `404` and `{ message: "No OPTIONS route provided and no options handler set" }`. See [Global OPTIONS Handler](#global-options-handler).
+
+## Global OPTIONS Handler
+
+`OPTIONS` requests that do not match a registered route are passed to `optionsHandler` when you set it on `createServer`. A typical use is answering CORS preflights for every path:
+
+```ts
+import { createServer } from "valita-server";
+
+createServer({
+    optionsHandler: (req) => ({
+        status: 204,
+        headers: {
+            "Access-Control-Allow-Origin": req.headers.origin ?? "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+    }),
+}).listen(3000);
+```
+
+The handler can be async. `createLambda` does not install `optionsHandler`; configure CORS for Lambda at API Gateway, or handle `OPTIONS` inside your own adapter.
 
 ## Example: Bookstore API
 
@@ -145,6 +168,7 @@ The repository ships with a runnable example under `example/bookstore` that demo
 
 - Registering routes with middleware and schemas
 - Serving the same routes via a local HTTP server (`bookstore.app.ts`)
+- Answering unmatched `OPTIONS` requests with a global `optionsHandler` (`bookstore.app.ts`)
 - Exporting the same logic as an AWS Lambda handler (`bookstore-lambda.ts`)
 
 ### Try it locally

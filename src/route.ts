@@ -7,6 +7,7 @@ import { Response } from "./types/response.type";
 import { validateRequest } from "./utils/zod.utils";
 import { NoRouteError } from "./constants/no-route.error";
 import { createRouteTrie, RouteTrie } from "./trie";
+import { optionsHandler } from "./handlers/options.handler";
 
 type RouteFns = [...(MiddlewareFn | Schema)[], ControllerFn];
 
@@ -16,6 +17,7 @@ let gets = createRouteTrie<RouteFns>(Method.Get);
 let posts = createRouteTrie<RouteFns>(Method.Post);
 let puts = createRouteTrie<RouteFns>(Method.Put);
 let deletes = createRouteTrie<RouteFns>(Method.Delete);
+let optionsTrie = createRouteTrie<RouteFns>(Method.Options);
 
 export function init() {
     globalMiddlewares = [];
@@ -23,6 +25,7 @@ export function init() {
     posts = createRouteTrie<RouteFns>(Method.Post);
     puts = createRouteTrie<RouteFns>(Method.Put);
     deletes = createRouteTrie<RouteFns>(Method.Delete);
+    optionsTrie = createRouteTrie<RouteFns>(Method.Options);
 }
 
 export function get(path: string, ...routeFns: RouteFns) {
@@ -51,6 +54,8 @@ export function resolveMethodObj(method: Method): RouteTrie<RouteFns> | never {
             return puts;
         case Method.Delete:
             return deletes;
+        case Method.Options:
+            return optionsTrie;
         default:
             throw new NoRouteError(`Method ${method} not supported`);
     }
@@ -62,6 +67,9 @@ export function resolveController(
 ): { routeFns: RouteFns; params: Record<string, string> } | never {
     const trie = resolveMethodObj(method);
     const found = trie.find(url);
+    if (!found && method === Method.Options) {
+        return { params: {}, routeFns: [optionsHandler] };
+    }
     if (!found) {
         throw new NoRouteError(`Route ${method} ${url} not found`);
     }

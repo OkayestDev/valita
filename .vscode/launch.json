@@ -8,7 +8,15 @@
             "port": 9229,
             "restart": true,
             "cwd": "${workspaceFolder}",
-            "skipFiles": ["<node_internals>/**"]
+            "skipFiles": [
+                "<node_internals>/**"
+            ]
+        },
+        {
+            "name": "Attach to Bun",
+            "type": "bun",
+            "request": "attach",
+            "url": "ws://127.0.0.1:6499/hotbun"
         }
     ]
 }
