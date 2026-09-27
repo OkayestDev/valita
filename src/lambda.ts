@@ -12,11 +12,13 @@ import { configureLogger } from "./handlers/logger.handler";
 import { configureErrorHandler } from "./handlers/error.handler";
 import { sendLambdaResponse } from "./utils/response.utils";
 import { setLoggerOptions } from "./utils/logger.utils";
+import { configureOptionsHandler } from "./handlers/options.handler";
 
 export function createLambda(options: Options = {}) {
     configureErrorHandler(options);
     configureLogger(options);
     setLoggerOptions(options);
+    configureOptionsHandler(options);
     return async function (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResultV2> {
         const body = safeParseJson(event.body ?? "");
         const { path, httpMethod: method, headers, queryStringParameters: query } = event;

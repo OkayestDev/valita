@@ -119,5 +119,34 @@ describe("server", () => {
             expect(res.getHeader("Content-Type")).toBe("application/json");
             expect(res.end).toHaveBeenCalledWith(JSON.stringify({ message: "big success!" }));
         });
+
+        it("should use the configured options handler for OPTIONS requests", async () => {
+            const optionsHandler = jest.fn((): Response => {
+                return {
+                    status: 200,
+                    headers: { "Access-Control-Allow-Origin": "*" },
+                    body: { ok: true },
+                };
+            });
+            const { req, res } = mockRequestResponse({
+                method: Method.Options,
+                url: "/users",
+                headers: { origin: "https://example.com" },
+            });
+
+            await serverCallback({ optionsHandler })(req, res);
+
+            expect(optionsHandler).toHaveBeenCalledWith({
+                params: {},
+                body: {},
+                query: {},
+                headers: { origin: "https://example.com" },
+                cookies: {},
+                method: Method.Options,
+            });
+            expect(res.statusCode).toBe(200);
+            expect(res.getHeader("Access-Control-Allow-Origin")).toBe("*");
+            expect(res.end).toHaveBeenCalledWith(JSON.stringify({ ok: true }));
+        });
     });
 });
