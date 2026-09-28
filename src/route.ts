@@ -56,6 +56,11 @@ export function del(path: string, ...routeFns: RouteFns) {
     return deletes.insert(path, routeFns);
 }
 
+export function options(path: string, ...routeFns: RouteFns) {
+    compileRouteSchemas(routeFns);
+    return optionsTrie.insert(path, routeFns);
+}
+
 export function resolveMethodObj(method: Method): RouteTrie<RouteFns> | never {
     switch (method) {
         case Method.Get:

@@ -4,8 +4,8 @@ Valita is a minimal, composable HTTP toolkit for Node.js and AWS Lambda. It give
 
 ## Features
 
-- **Routing primitives** — Register `get`, `post`, `put`, and `del` routes with familiar path patterns and Express-style params (`/books/:id`).
-- **Global OPTIONS handler** — Set `optionsHandler` on `createServer` to answer `OPTIONS` requests (such as CORS preflights) when no route matches.
+- **Routing primitives** — Register `get`, `post`, `put`, `del`, and `options` routes with familiar path patterns and Express-style params (`/books/:id`).
+- **OPTIONS routes** — `options` registers an `OPTIONS` route for one path. Set `optionsHandler` on `createServer` or `createLambda` to answer `OPTIONS` requests when no `options` route matches.
 - **Middleware pipeline** — Chain any number of middleware functions before your controller. Each middleware can short-circuit by returning a response or continue by returning `undefined`.
 - **Schema validation** — Attach Zod schemas to `params`, `query`, `body`, `headers`, and `cookies`. Requests are validated automatically and fail with consistent `400` responses.
 - **File uploads** — `multipart/form-data` is parsed in the Node and Lambda adapters. Text fields stay on `request.body`. Files are on `request.files`.
@@ -189,12 +189,26 @@ Both `createServer` and `createLambda` accept an optional `Options` object:
 - `enableRequestLogging?: boolean` — When `true`, every request is passed to `logRequest(path, data)`.
 - `enableResponseLogging?: boolean` — When `true`, every response is passed to `logResponse(path, response)`.
 - `loggingFn?: LoggerFn` — Override the logging function used by both `logRequest` and `logResponse` (defaults to `console.log`).
-- `optionsHandler?: OptionsHandler` — Global handler for `OPTIONS` requests that do not match a registered route. `createServer` installs this handler. It receives the `Request` and returns a `Response` or `Promise<Response>`. If omitted, Valita responds with `404` and `{ message: "No OPTIONS route provided and no options handler set" }`. See [Global OPTIONS Handler](#global-options-handler).
+- `optionsHandler?: OptionsHandler` — Fallback for `OPTIONS` requests that do not match an `options` route. It receives the `Request` and returns a `Response` or `Promise<Response>`. If omitted, Valita responds with `404` and `{ message: "No OPTIONS route provided and no options handler set" }`. See [OPTIONS routes](#options-routes).
 - `maxBodyBytes?: number` — Maximum request body size in bytes. Defaults to 10 MB. A larger body returns `413`.
 
-## Global OPTIONS Handler
+## OPTIONS routes
 
-`OPTIONS` requests that do not match a registered route are passed to `optionsHandler` when you set it on `createServer`. A typical use is answering CORS preflights for every path:
+Register a path with `options`, the same way you register `get` or `post`. Middleware and Zod schemas work on that route too.
+
+```ts
+import { options } from "valita-server";
+
+options("/books/:id", (req) => ({
+    status: 204,
+    headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+    },
+}));
+```
+
+An `OPTIONS` request that does not match an `options` route is passed to `optionsHandler` when you set it on `createServer` or `createLambda`. A typical use is answering CORS preflights for every other path:
 
 ```ts
 import { createServer } from "valita-server";
@@ -211,7 +225,7 @@ createServer({
 }).listen(3000);
 ```
 
-The handler can be async. `createLambda` does not install `optionsHandler`; configure CORS for Lambda at API Gateway, or handle `OPTIONS` inside your own adapter.
+The handler can be async. If no `options` route matches and `optionsHandler` is omitted, Valita responds with `404` and `{ message: "No OPTIONS route provided and no options handler set" }`.
 
 ## Example: Bookstore API
 
@@ -220,7 +234,7 @@ The repository ships with a runnable example under `example/bookstore` that demo
 - Registering routes with middleware and schemas
 - Serving the same routes via a local HTTP server (`bookstore.app.ts`)
 - Uploading a book cover with `POST /books/:id/cover` (`upload-cover.controller.ts`)
-- Answering unmatched `OPTIONS` requests with a global `optionsHandler` (`bookstore.app.ts`)
+- Answering unmatched `OPTIONS` requests with `optionsHandler` when no `options` route matches (`bookstore.app.ts`)
 - Exporting the same logic as an AWS Lambda handler (`bookstore-lambda.ts`)
 
 ### Try it locally

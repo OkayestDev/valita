@@ -1,4 +1,5 @@
 import { Method, StatusCode } from "../constants/enums";
+import { optionsHandler } from "../handlers/options.handler";
 import * as route from "../route";
 import { z } from "zod";
 import { Request } from "../types/request.type";
@@ -61,6 +62,31 @@ describe("route", () => {
             const controller = jest.fn();
             route.del("/delete", controller);
             expect(() => route.del("/delete", controller)).toThrow("DELETE /delete already exists");
+        });
+    });
+
+    describe("options", () => {
+        it("should add an options route", () => {
+            const controller = jest.fn();
+            route.options("/books/:id", controller);
+            const { routeFns, params } = route.resolveController(Method.Options, "/books/1");
+            expect(routeFns[0]).toBe(controller);
+            expect(params).toEqual({ id: "1" });
+        });
+
+        it("should throw an error if the route already exists", () => {
+            const controller = jest.fn();
+            route.options("/options", controller);
+            expect(() => route.options("/options", controller)).toThrow(
+                "OPTIONS /options already exists",
+            );
+        });
+
+        it("should use the global options handler when no route matches", () => {
+            route.options("/books/:id", jest.fn());
+            const { routeFns, params } = route.resolveController(Method.Options, "/missing");
+            expect(routeFns).toEqual([optionsHandler]);
+            expect(params).toEqual({});
         });
     });
 
