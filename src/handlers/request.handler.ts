@@ -43,6 +43,6 @@ export async function requestHandler({
     } catch (err: any) {
         return errorHandler(err);
     } finally {
-        new Promise(() => flushLogger());
+        flushLogger();
     }
 }

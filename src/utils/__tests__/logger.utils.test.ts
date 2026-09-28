@@ -1,4 +1,4 @@
-import { defaultOptions, log, logger, setLoggerOptions } from "../logger.utils";
+import { defaultOptions, flushLogger, log, logger, setLoggerOptions } from "../logger.utils";
 import * as batchStdout from "batch-stdout";
 
 describe("loggerUtils", () => {
@@ -41,6 +41,25 @@ describe("loggerUtils", () => {
             const logSpy = jest.spyOn(logger, "debug");
             log.debug("test", { message: "test" });
             expect(logSpy).toHaveBeenCalledWith("test", { message: "test" });
+        });
+    });
+
+    describe("flushLogger", () => {
+        it("should skip flushing when nothing was logged", () => {
+            const flushSpy = jest.spyOn(logger, "flush").mockImplementation(() => undefined);
+            flushLogger();
+            flushSpy.mockClear();
+            flushLogger();
+            expect(flushSpy).not.toHaveBeenCalled();
+            flushSpy.mockRestore();
+        });
+
+        it("should flush after a log line is buffered", () => {
+            const flushSpy = jest.spyOn(logger, "flush").mockImplementation(() => undefined);
+            log.info("test", { message: "test" });
+            flushLogger();
+            expect(flushSpy).toHaveBeenCalledTimes(1);
+            flushSpy.mockRestore();
         });
     });
 });

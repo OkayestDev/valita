@@ -1,9 +1,8 @@
 import http from "http";
 import { safeParseJson } from "./utils/json.utils";
 import { Method } from "./constants/enums";
-import querystring from "querystring";
 import { sendHttpResponse } from "./utils/response.utils";
-import { parseCookies } from "./utils/request.utils";
+import { parseCookies, parseQuery } from "./utils/request.utils";
 import { requestHandler } from "./handlers/request.handler";
 import { Options } from "./types/options.type";
 import { configureLogger } from "./handlers/logger.handler";
@@ -19,6 +18,10 @@ function parseBody(req: http.IncomingMessage): Promise<Record<string, any> | und
             chunks.push(chunk);
         });
         req.on("end", () => {
+            if (chunks.length === 0) {
+                resolve(undefined);
+                return;
+            }
             const body = Buffer.concat(chunks).toString();
             resolve(safeParseJson(body));
         });
@@ -33,7 +36,7 @@ export const serverCallback = (options: Options = {}) => {
     configureOptionsHandler(options);
     return async (req: http.IncomingMessage, httpResponse: http.ServerResponse) => {
         const [pathname, querystr] = req.url?.split("?") || [];
-        const query = querystring.parse(querystr || "");
+        const query = parseQuery(querystr);
         const body = await parseBody(req);
         const cookies = parseCookies(req.headers.cookie as string);
 

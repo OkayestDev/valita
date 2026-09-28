@@ -1,6 +1,6 @@
 {
     "name": "valita-server",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "main": "index.js",
     "repository": {
         "type": "git",
@@ -10,8 +10,8 @@
         "build": "tsc -p tsconfig.build.json",
         "lint": "eslint . --ext .ts",
         "test": "node --inspect=9229 ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles",
-        "example-serverless": "serverless offline start --stage dev -c ./example/bookstore/serverless.yml",
-        "example-server": "node --inspect=9229 -r ts-node/register ./example/bookstore/bookstore.app.ts",
+        "example-serverless": "serverless offline start --stage dev -c ./example/valita-bookstore/serverless.yml",
+        "example-server": "tsx ./example/valita-bookstore/bookstore.app.ts",
         "publish:latest": "npm run build && npm publish --access public",
         "hotbun": "bun --inspect=127.0.0.1:6499/hotbun --hot ./example/valita-bookstore/bookstore.app.ts"
     },
@@ -34,8 +34,8 @@
         "typescript": "^5.6.3"
     },
     "dependencies": {
-        "batch-stdout": "^0.1.0",
-        "zod": "^4.1.12"
+        "batch-stdout": "^0.2.0",
+        "zod": "^4.6.0"
     },
     "keywords": [
         "api",

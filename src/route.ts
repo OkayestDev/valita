@@ -4,7 +4,7 @@ import { MiddlewareFn } from "./types/middleware.type";
 import { Schema } from "./types/schema.type";
 import { Request } from "./types/request.type";
 import { Response } from "./types/response.type";
-import { validateRequest } from "./utils/zod.utils";
+import { compileSchema, validateRequest } from "./utils/zod.utils";
 import { NoRouteError } from "./constants/no-route.error";
 import { createRouteTrie, RouteTrie } from "./trie";
 import { optionsHandler } from "./handlers/options.handler";
@@ -28,19 +28,31 @@ export function init() {
     optionsTrie = createRouteTrie<RouteFns>(Method.Options);
 }
 
+function compileRouteSchemas(routeFns: readonly (MiddlewareFn | Schema | ControllerFn)[]) {
+    for (const routeFn of routeFns) {
+        if (typeof routeFn === "object") {
+            compileSchema(routeFn);
+        }
+    }
+}
+
 export function get(path: string, ...routeFns: RouteFns) {
+    compileRouteSchemas(routeFns);
     return gets.insert(path, routeFns);
 }
 
 export function post(path: string, ...routeFns: RouteFns) {
+    compileRouteSchemas(routeFns);
     return posts.insert(path, routeFns);
 }
 
 export function put(path: string, ...routeFns: RouteFns) {
+    compileRouteSchemas(routeFns);
     return puts.insert(path, routeFns);
 }
 
 export function del(path: string, ...routeFns: RouteFns) {
+    compileRouteSchemas(routeFns);
     return deletes.insert(path, routeFns);
 }
 
@@ -77,6 +89,9 @@ export function resolveController(
 }
 
 export function addGlobalMiddleware(middleware: MiddlewareFn | Schema) {
+    if (typeof middleware === "object") {
+        compileSchema(middleware);
+    }
     globalMiddlewares.push(middleware);
 }
 
