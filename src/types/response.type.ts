@@ -1,5 +1,7 @@
+import { StatusCode } from "../constants/enums";
+
 export type Response = {
-    status: number;
+    status: StatusCode;
     headers?: Record<string, any>;
     body?: Record<string, any>;
 }

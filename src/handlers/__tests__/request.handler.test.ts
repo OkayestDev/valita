@@ -1,4 +1,4 @@
-import { Method } from "../../constants/enums";
+import { Method, StatusCode } from "../../constants/enums";
 import { requestHandler } from "../request.handler";
 import { Response } from "../../types/response.type";
 import { ControllerFn } from "../../types/controller.type";
@@ -19,14 +19,14 @@ describe("requestHandler", () => {
             method: Method.Get,
             pathname: "/not-found",
         });
-        expect(response.status).toBe(404);
+        expect(response.status).toBe(StatusCode.NotFound);
         expect(response.body).toEqual({ message: "Route GET /not-found not found" });
     });
 
     it("should return a 200 response if the route is found", async () => {
         const controller = jest.fn((): Response => {
             return {
-                status: 200,
+                status: StatusCode.Ok,
                 headers: { "Content-Type": "application/json" },
                 body: { message: "big success!" },
             };
@@ -40,7 +40,7 @@ describe("requestHandler", () => {
             method: Method.Get,
             pathname: "/users",
         });
-        expect(response.status).toBe(200);
+        expect(response.status).toBe(StatusCode.Ok);
         expect(response.body).toEqual({ message: "big success!" });
     });
 
@@ -49,7 +49,7 @@ describe("requestHandler", () => {
         const flushSpy = jest.spyOn(loggerUtils, "flushLogger").mockImplementation(() => undefined);
         configureErrorHandler({
             errorHandler: () => ({
-                status: 500,
+                status: StatusCode.InternalServerError,
                 body: { message: "Internal server error from example api" },
             }),
         });
@@ -67,7 +67,7 @@ describe("requestHandler", () => {
         });
 
         expect(response).toEqual({
-            status: 500,
+            status: StatusCode.InternalServerError,
             body: { message: "Internal server error from example api" },
         });
         expect(flushSpy).toHaveBeenCalled();
@@ -84,7 +84,7 @@ describe("requestHandler", () => {
         configureErrorHandler({
             errorHandler: (err) => {
                 log.error("handled error", { message: err.message });
-                return { status: 500, body: { message: "failed" } };
+                return { status: StatusCode.InternalServerError, body: { message: "failed" } };
             },
         });
 
@@ -120,7 +120,7 @@ describe("requestHandler", () => {
                 log.warn("controller warn");
                 log.error("controller error");
                 log.debug("controller debug");
-                return { status: 200, body: { ok: true } };
+                return { status: StatusCode.Ok, body: { ok: true } };
             });
             const leftAfterSuccess = writes.join("\n");
 
@@ -163,7 +163,7 @@ describe("requestHandler", () => {
             method: "INVALID" as Method,
             pathname: "/users",
         });
-        expect(response.status).toBe(404);
+        expect(response.status).toBe(StatusCode.NotFound);
         expect(response.body).toEqual({ message: "Method INVALID not supported" });
     });
 });

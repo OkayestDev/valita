@@ -1,7 +1,7 @@
 import { Schema } from "../types/schema.type";
 import { Request } from "../types/request.type";
 import z from "zod";
-import { ValidationError } from "../constants/validation.error";
+import { ValidationError } from "../errors/validation.error";
 
 const compiledSchemas = new WeakMap<Schema, z.ZodType>();
 

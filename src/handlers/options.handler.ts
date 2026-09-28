@@ -1,3 +1,4 @@
+import { StatusCode } from "../constants/enums";
 import { OptionsHandler } from "../types/controller.type";
 import { Options } from "../types/options.type";
 import { Request } from "../types/request.type";
@@ -15,7 +16,7 @@ export function configureOptionsHandler(options: Options) {
 export function optionsHandler(request: Request): Response | Promise<Response> {
     if (!optionsHandlerFn) {
         return {
-            status: 404,
+            status: StatusCode.NotFound,
             body: { message: "No OPTIONS route provided and no options handler set" },
         };
     }

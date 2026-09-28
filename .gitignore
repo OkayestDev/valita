@@ -2,3 +2,4 @@ node_modules
 dist
 coverage
 undefined
+example/valita-bookstore/controller/new-books.json

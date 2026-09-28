@@ -1,12 +1,15 @@
 require("./routes/book.routes");
 
 import { Response } from "../../src/types/response.type";
-import { createServer, log } from "../../index";
+import { ValidationError, createServer, defaultErrorHandler, log, StatusCode } from "../../index";
 
 function errorHandler(err: Error): Response {
     log.error("Error!", err);
+    if (err instanceof ValidationError) {
+        return defaultErrorHandler(err);
+    }
     return {
-        status: 500,
+        status: StatusCode.InternalServerError,
         body: { message: "Internal server error from example api" },
     };
 }
@@ -30,7 +33,7 @@ const server = createServer({
         isPrettyPrint: true,
     },
     optionsHandler: () => ({
-        status: 200,
+        status: StatusCode.Ok,
         headers: {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -40,6 +43,10 @@ const server = createServer({
     }),
 });
 
-server.listen(3000, () => {
-    console.log("Bookstore app is running on port 3000");
+const port = Number(process.env.PORT ?? 3000);
+
+server.listen(port, () => {
+    const address = server.address();
+    const boundPort = typeof address === "object" && address ? address.port : port;
+    console.log(`Bookstore app is running on port ${boundPort}`);
 });

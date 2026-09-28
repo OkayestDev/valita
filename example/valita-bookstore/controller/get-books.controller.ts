@@ -1,11 +1,11 @@
-import { Request } from "../../../index";
+import { Request, StatusCode } from "../../../index";
 import fs from "fs";
 import path from "path";
 
 export async function getBooksController(_: Request) {
     const books = JSON.parse(fs.readFileSync(path.join(__dirname, "books.json"), "utf8"));
     return {
-        status: 200,
+        status: StatusCode.Ok,
         body: {
             message: "Books fetched successfully",
             books,

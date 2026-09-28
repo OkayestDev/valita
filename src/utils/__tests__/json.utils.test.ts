@@ -1,21 +1,20 @@
-import { safeParseJson } from "../json.utils";
+import { JsonBodyError } from "../../errors/json-body.error";
+import { parseJsonBody } from "../json.utils";
 
 describe("jsonUtils", () => {
-    describe("safeParseJson", () => {
+    describe("parseJsonBody", () => {
         it("should parse json", () => {
             const json = '{"hello": "world"}';
-            const result = safeParseJson(json);
+            const result = parseJsonBody(json);
             expect(result).toEqual({ hello: "world" });
         });
 
         it("should return undefined for an empty body without parsing", () => {
-            expect(safeParseJson("")).toBeUndefined();
+            expect(parseJsonBody("")).toBeUndefined();
         });
 
-        it("should return an undefined if the json is invalid", () => {
-            const json = "invalid json";
-            const result = safeParseJson(json);
-            expect(result).toEqual(undefined);
+        it("should throw if the json is invalid", () => {
+            expect(() => parseJsonBody("invalid json")).toThrow(JsonBodyError);
         });
     });
 });

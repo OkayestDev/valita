@@ -1,9 +1,9 @@
-import { Method } from "../constants/enums";
+import { Method, StatusCode } from "../constants/enums";
 import * as route from "../route";
 import { z } from "zod";
 import { Request } from "../types/request.type";
 import { MiddlewareFn } from "../types/middleware.type";
-import { ValidationError } from "../constants/validation.error";
+import { ValidationError } from "../errors/validation.error";
 import { Schema } from "../types/schema.type";
 import { Response } from "../types/response.type";
 
@@ -66,7 +66,7 @@ describe("route", () => {
 
     describe("invokeRouteFns", () => {
         it("should invoke the controller function", async () => {
-            const controller = jest.fn(() => ({ status: 200, body: { message: "success" } }));
+            const controller = jest.fn(() => ({ status: StatusCode.Ok, body: { message: "success" } }));
             const middleware = jest.fn();
             const schema = {
                 body: z.object({
@@ -79,14 +79,15 @@ describe("route", () => {
                 query: {},
                 headers: {},
                 cookies: {},
+                files: {},
                 method: Method.Post,
             };
             const res = await route.invokeRouteFns([middleware, schema, controller], request);
-            expect(res).toEqual({ status: 200, body: { message: "success" } });
+            expect(res).toEqual({ status: StatusCode.Ok, body: { message: "success" } });
         });
 
         it("should short-circuit if a middleware function returns a response", async () => {
-            const middleware = jest.fn(() => ({ status: 401, body: { message: "unauthorized" } }));
+            const middleware = jest.fn(() => ({ status: StatusCode.Unauthorized, body: { message: "unauthorized" } }));
             const controller = jest.fn();
             const request: Request = {
                 params: {},
@@ -94,19 +95,20 @@ describe("route", () => {
                 query: {},
                 headers: {},
                 cookies: {},
+                files: {},
                 method: Method.Post,
             };
             const res = await route.invokeRouteFns(
                 [middleware as unknown as MiddlewareFn, controller],
                 request,
             );
-            expect(res).toEqual({ status: 401, body: { message: "unauthorized" } });
+            expect(res).toEqual({ status: StatusCode.Unauthorized, body: { message: "unauthorized" } });
             expect(controller).not.toHaveBeenCalled();
             expect(middleware).toHaveBeenCalledWith(request);
         });
 
         it("should validate the request if schema is provided", async () => {
-            const controller = jest.fn(() => ({ status: 200, body: { message: "success" } }));
+            const controller = jest.fn(() => ({ status: StatusCode.Ok, body: { message: "success" } }));
             const middleware = jest.fn();
             const schema = {
                 body: z.object({
@@ -119,6 +121,7 @@ describe("route", () => {
                 query: {},
                 headers: {},
                 cookies: {},
+                files: {},
                 method: Method.Post,
             };
             expect(() =>
@@ -127,7 +130,7 @@ describe("route", () => {
         });
 
         it("should invoke global schema if provided", async () => {
-            const controller = jest.fn(() => ({ status: 200, body: { message: "success" } }));
+            const controller = jest.fn(() => ({ status: StatusCode.Ok, body: { message: "success" } }));
             const schema: Schema = {
                 body: z.object({
                     name: z.string(),
@@ -139,6 +142,7 @@ describe("route", () => {
                 query: {},
                 headers: {},
                 cookies: {},
+                files: {},
                 method: Method.Post,
             };
             route.addGlobalMiddleware(schema);
@@ -150,7 +154,7 @@ describe("route", () => {
 
         it("should invoke global middleware if provided", async () => {
             const middleware = jest.fn(
-                (): Response => ({ status: 401, body: { message: "unauthorized" } }),
+                (): Response => ({ status: StatusCode.Unauthorized, body: { message: "unauthorized" } }),
             );
             const controller = jest.fn();
             const request: Request = {
@@ -159,12 +163,13 @@ describe("route", () => {
                 query: {},
                 headers: {},
                 cookies: {},
+                files: {},
                 method: Method.Post,
             };
             route.addGlobalMiddleware(middleware);
             const res = await route.invokeRouteFns([controller], request);
             expect(controller).not.toHaveBeenCalled();
-            expect(res.status).toBe(401);
+            expect(res.status).toBe(StatusCode.Unauthorized);
         });
     });
 });

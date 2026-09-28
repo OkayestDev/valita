@@ -1,5 +1,9 @@
-import { NoRouteError } from "../constants/no-route.error";
-import { ValidationError } from "../constants/validation.error";
+import { StatusCode } from "../constants/enums";
+import { JsonBodyError } from "../errors/json-body.error";
+import { MultipartError } from "../errors/multipart.error";
+import { NoRouteError } from "../errors/no-route.error";
+import { PayloadTooLargeError } from "../errors/payload-too-large.error";
+import { ValidationError } from "../errors/validation.error";
 import { ErrorHandler } from "../types/error-handler.type";
 import { Options } from "../types/options.type";
 import { Response } from "../types/response.type";
@@ -13,20 +17,34 @@ export function configureErrorHandler(options: Options) {
 export const defaultErrorHandler: ErrorHandler = (err: any | Error): Response => {
     if (err instanceof ValidationError) {
         return {
-            status: 400,
+            status: StatusCode.BadRequest,
             body: { message: err.message, error: err.error },
+        };
+    }
+
+    if (err instanceof JsonBodyError || err instanceof MultipartError) {
+        return {
+            status: StatusCode.BadRequest,
+            body: { message: err.message },
+        };
+    }
+
+    if (err instanceof PayloadTooLargeError) {
+        return {
+            status: StatusCode.PayloadTooLarge,
+            body: { message: err.message },
         };
     }
 
     if (err instanceof NoRouteError) {
         return {
-            status: 404,
+            status: StatusCode.NotFound,
             body: { message: err.message },
         };
     }
 
     return {
-        status: 500,
+        status: StatusCode.InternalServerError,
         body: { message: "Internal server error" },
     };
 };

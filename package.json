@@ -1,6 +1,6 @@
 {
     "name": "valita-server",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "main": "index.js",
     "repository": {
         "type": "git",
@@ -9,7 +9,9 @@
     "scripts": {
         "build": "tsc -p tsconfig.build.json",
         "lint": "eslint . --ext .ts",
+        "test-suite": "npm run test && npm run test:integration",
         "test": "node --inspect=9229 ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles",
+        "test:integration": "node --inspect=9229 ./node_modules/jest/bin/jest.js --runInBand --detectOpenHandles --testPathPattern=integration\\.test\\.ts --testPathIgnorePatterns=/node_modules/",
         "example-serverless": "serverless offline start --stage dev -c ./example/valita-bookstore/serverless.yml",
         "example-server": "tsx ./example/valita-bookstore/bookstore.app.ts",
         "publish:latest": "npm run build && npm publish --access public",

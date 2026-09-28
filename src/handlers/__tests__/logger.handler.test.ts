@@ -1,3 +1,4 @@
+import { StatusCode } from "../../constants/enums";
 import { configureLogger, logRequest, logResponse } from "../logger.handler";
 import { log } from "../../utils/logger.utils";
 
@@ -57,7 +58,7 @@ describe("loggerHandler", () => {
 
     describe("logResponse", () => {
         it("should log a response", () => {
-            const response = { status: 200, body: { message: "big success!" } };
+            const response = { status: StatusCode.Ok, body: { message: "big success!" } };
             const logSpy = jest.spyOn(log, "info");
             configureLogger({ enableResponseLogging: true });
             logResponse("test", response);
@@ -65,7 +66,7 @@ describe("loggerHandler", () => {
         });
 
         it("should not log a response if logging is disabled", () => {
-            const response = { status: 200, body: { message: "big success!" } };
+            const response = { status: StatusCode.Ok, body: { message: "big success!" } };
             const logSpy = jest.spyOn(log, "info");
             configureLogger({ enableResponseLogging: false });
             logResponse("test", response);
@@ -75,7 +76,7 @@ describe("loggerHandler", () => {
         it('should use customs logging function if provided', () => {
             const loggingFn = jest.fn();
             configureLogger({ enableResponseLogging: true, loggingFn });
-            const response = { status: 200, body: { message: "big success!" } };
+            const response = { status: StatusCode.Ok, body: { message: "big success!" } };
             logResponse("test", response);
             expect(loggingFn).toHaveBeenCalledWith("RESPONSE: test", response);
         });

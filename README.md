@@ -8,8 +8,9 @@ Valita is a minimal, composable HTTP toolkit for Node.js and AWS Lambda. It give
 - **Global OPTIONS handler** — Set `optionsHandler` on `createServer` to answer `OPTIONS` requests (such as CORS preflights) when no route matches.
 - **Middleware pipeline** — Chain any number of middleware functions before your controller. Each middleware can short-circuit by returning a response or continue by returning `undefined`.
 - **Schema validation** — Attach Zod schemas to `params`, `query`, `body`, `headers`, and `cookies`. Requests are validated automatically and fail with consistent `400` responses.
+- **File uploads** — `multipart/form-data` is parsed in the Node and Lambda adapters. Text fields stay on `request.body`. Files are on `request.files`.
 - **Server + Lambda adapters** — Use `createServer` for Node’s `http` module or `createLambda` for AWS Lambda/API Gateway — same routes, same handlers.
-- **Typed contracts** — `Request`, `Response`, `Schema`, `ControllerFn`, and `MiddlewareFn` types ship with the library so your editor sees the same shapes Valita expects.
+- **Typed contracts** — `Request`, `Response`, `Schema`, `ControllerFn`, `MiddlewareFn`, and `UploadedFile` types ship with the library so your editor sees the same shapes Valita expects.
 
 ## Installation
 
@@ -116,6 +117,55 @@ If validation fails, Valita throws a `ValidationError` that is translated into:
 
 You can catch and report these errors differently by providing a custom `errorHandler` (see below).
 
+## File Uploads
+
+Send `multipart/form-data`. Valita reads the body in the adapter before your route runs, so a middleware does not have to touch the raw stream. Text fields are strings on `request.body`. Each file is on `request.files`, keyed by its field name:
+
+```ts
+import { post, UploadedFile } from "valita-server";
+
+function oneFile(file: UploadedFile | UploadedFile[] | undefined) {
+    if (!file) {
+        return undefined;
+    }
+    return Array.isArray(file) ? file[0] : file;
+}
+
+post("/books/:id/cover", (req) => {
+    const cover = oneFile(req.files.cover);
+    if (!cover) {
+        return { status: 400, body: { message: "Cover file is required" } };
+    }
+    return {
+        status: 201,
+        body: {
+            filename: cover.filename,
+            mediaType: cover.mediaType,
+            size: cover.data.length,
+        },
+    };
+});
+```
+
+`UploadedFile` is `{ filename, mediaType, data }`, and `data` is a `Buffer`. A repeated field name becomes an array, the same way repeated query keys do. A Zod `body` schema still validates the text fields. `caption` on the bookstore cover route is an optional string.
+
+```bash
+curl -X POST "http://localhost:3000/books/1/cover?userId=123" \
+  -F "caption=Front cover" \
+  -F "cover=@cover.png;type=image/png"
+```
+
+Bodies are limited to 10 MB by default. Set `maxBodyBytes` on `createServer` or `createLambda` to change that. A larger body returns `413` and `{ "message": "Request body too large" }`.
+
+Other body errors:
+
+- Invalid JSON returns `400` and `{ "message": "Invalid JSON body" }`.
+- A malformed multipart body returns `400` and `{ "message": "Invalid multipart body" }` (or a more specific message, such as a missing boundary).
+
+`JsonBodyError`, `MultipartError`, and `PayloadTooLargeError` are exported. A custom `errorHandler` replaces the default, so it has to map those errors if you want these status codes.
+
+The parser is a single-level `multipart/form-data` reader. Parts are separated by CRLF and the boundary. It does not expand nested multiparts or `filename*` encoding. On Lambda, API Gateway must pass the body through with `isBase64Encoded: true`. The API Gateway payload limit is 6 MB, which is below Valita's default body limit.
+
 ## AWS Lambda Handler
 
 Use the same routes and controllers with the Lambda adapter:
@@ -140,6 +190,7 @@ Both `createServer` and `createLambda` accept an optional `Options` object:
 - `enableResponseLogging?: boolean` — When `true`, every response is passed to `logResponse(path, response)`.
 - `loggingFn?: LoggerFn` — Override the logging function used by both `logRequest` and `logResponse` (defaults to `console.log`).
 - `optionsHandler?: OptionsHandler` — Global handler for `OPTIONS` requests that do not match a registered route. `createServer` installs this handler. It receives the `Request` and returns a `Response` or `Promise<Response>`. If omitted, Valita responds with `404` and `{ message: "No OPTIONS route provided and no options handler set" }`. See [Global OPTIONS Handler](#global-options-handler).
+- `maxBodyBytes?: number` — Maximum request body size in bytes. Defaults to 10 MB. A larger body returns `413`.
 
 ## Global OPTIONS Handler
 
@@ -168,6 +219,7 @@ The repository ships with a runnable example under `example/bookstore` that demo
 
 - Registering routes with middleware and schemas
 - Serving the same routes via a local HTTP server (`bookstore.app.ts`)
+- Uploading a book cover with `POST /books/:id/cover` (`upload-cover.controller.ts`)
 - Answering unmatched `OPTIONS` requests with a global `optionsHandler` (`bookstore.app.ts`)
 - Exporting the same logic as an AWS Lambda handler (`bookstore-lambda.ts`)
 
@@ -178,6 +230,14 @@ npm install
 ts-node example/valita-bookstore/bookstore.app.ts
 # Visit http://localhost:3000/books?userId=123
 ```
+
+With the example server running, upload the sample cover:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\example\valita-bookstore\file-upload.ps1
+```
+
+That posts `example/valita-bookstore/cover.png` to `POST /books/1/cover?userId=123` and checks for a `201`. Pass `-FilePath` to send a different file.
 
 ### Try it with Serverless Offline
 

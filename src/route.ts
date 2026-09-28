@@ -5,7 +5,7 @@ import { Schema } from "./types/schema.type";
 import { Request } from "./types/request.type";
 import { Response } from "./types/response.type";
 import { compileSchema, validateRequest } from "./utils/zod.utils";
-import { NoRouteError } from "./constants/no-route.error";
+import { NoRouteError } from "./errors/no-route.error";
 import { createRouteTrie, RouteTrie } from "./trie";
 import { optionsHandler } from "./handlers/options.handler";
 

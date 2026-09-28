@@ -1,4 +1,4 @@
-import { Method } from "../../constants/enums";
+import { Method, StatusCode } from "../../constants/enums";
 import { Request } from "../../types/request.type";
 import { Response } from "../../types/response.type";
 import { configureOptionsHandler, optionsHandler } from "../options.handler";
@@ -10,6 +10,7 @@ const request: Request = {
     query: {},
     headers: { origin: "https://example.com" },
     cookies: {},
+    files: {},
     method: Method.Options,
 };
 
@@ -25,7 +26,7 @@ describe("optionsHandler", () => {
     it("should return a 404 response when no options handler is set", () => {
         const response = optionsHandler(request);
         expect(response).toEqual({
-            status: 404,
+            status: StatusCode.NotFound,
             body: { message: "No OPTIONS route provided and no options handler set" },
         });
     });
@@ -33,7 +34,7 @@ describe("optionsHandler", () => {
     it("should invoke the configured options handler", () => {
         const handler = jest.fn(
             (): Response => ({
-                status: 204,
+                status: StatusCode.NoContent,
                 headers: { "Access-Control-Allow-Origin": "*" },
             }),
         );
@@ -43,31 +44,31 @@ describe("optionsHandler", () => {
 
         expect(handler).toHaveBeenCalledWith(request);
         expect(response).toEqual({
-            status: 204,
+            status: StatusCode.NoContent,
             headers: { "Access-Control-Allow-Origin": "*" },
         });
     });
 
     it("should support an async options handler", async () => {
         configureOptionsHandler({
-            optionsHandler: async () => ({ status: 200, body: { ok: true } }),
+            optionsHandler: async () => ({ status: StatusCode.Ok, body: { ok: true } }),
         });
 
         await expect(optionsHandler(request)).resolves.toEqual({
-            status: 200,
+            status: StatusCode.Ok,
             body: { ok: true },
         });
     });
 
     it("should clear a previously configured handler", () => {
         configureOptionsHandler({
-            optionsHandler: () => ({ status: 204 }),
+            optionsHandler: () => ({ status: StatusCode.NoContent }),
         });
         configureOptionsHandler({});
 
         const response = optionsHandler(request);
         expect(response).toEqual({
-            status: 404,
+            status: StatusCode.NotFound,
             body: { message: "No OPTIONS route provided and no options handler set" },
         });
     });
@@ -75,7 +76,7 @@ describe("optionsHandler", () => {
     it("should handle an OPTIONS request when no route is registered", async () => {
         configureOptionsHandler({
             optionsHandler: () => ({
-                status: 200,
+                status: StatusCode.Ok,
                 headers: { "Access-Control-Allow-Methods": "GET, POST, OPTIONS" },
             }),
         });
@@ -90,7 +91,7 @@ describe("optionsHandler", () => {
         });
 
         expect(response).toEqual({
-            status: 200,
+            status: StatusCode.Ok,
             headers: { "Access-Control-Allow-Methods": "GET, POST, OPTIONS" },
         });
     });

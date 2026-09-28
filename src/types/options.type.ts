@@ -11,4 +11,5 @@ export type Options<Log extends LoggerFn = typeof log.info> = {
     errorHandler?: ErrorHandler;
     batchStdoutOptions?: Parameters<typeof logger>[0];
     optionsHandler?: OptionsHandler;
+    maxBodyBytes?: number;
 };
